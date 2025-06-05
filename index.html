@@ -51,7 +51,7 @@
       background-color: #fff;
       color: #333;
       line-height: 1.5;
-      padding: 0 15px;
+      padding: 0 15px; /* Manteniamo un po’ di margine orizzontale per tutto il body */
     }
 
     a {
@@ -59,14 +59,21 @@
       color: inherit;
     }
 
-    /* HEADER */
+    /* HEADER ESTESO ALL'INTERNO DEL BODY (rispettando il padding di 15px) */
     .header {
       background-color: var(--poste-yellow);
       padding: 20px;
+      /* RIMOSSI max-width e margin: auto */
+      /* border-radius rimane se vuoi mantenere gli angoli arrotondati */
       border-radius: 6px;
       text-align: center;
-      margin: 20px auto;
-      max-width: 800px;
+      margin: 20px 0; /* solo margine verticale, niente auto orizzontale */
+      /* Se vuoi spingere il giallo fino al bordo del body (senza tener conto del padding di 15px), basta mettere margin: 20px -15px; e width: calc(100% + 30px) */
+      /* Esempio (opzionale):
+         width: calc(100% + 30px);
+         margin: 20px -15px;
+         border-radius: 0;  (se vuoi togliere gli arrotondamenti ai bordi esterni)
+      */
     }
 
     .header h1 {
