@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Audioguide Player Pro</title>
+    <title>Audioguide Player Pro v0.4</title>
     <style>
         :root {
             --primary: #b71c1c;
             --bg-color: #f4f4f4;
-            --card-bg: #ffffff;
             --text-main: #212121;
         }
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
@@ -112,6 +111,7 @@
 </div>
 
 <script>
+    // Namespace globale
     window.app = {
         currentTracks: [],
         
@@ -132,7 +132,7 @@
             reader.readAsText(file);
         },
 
-        // --- NUOVO MOTORE DI GENERAZIONE (Fix Regex Error) ---
+        // --- MOTORE DI GENERAZIONE SICURO (Nessuna Regex con slash) ---
         generateJson: function() {
             const status = document.getElementById('convertStatus');
             try {
@@ -145,35 +145,36 @@
                     return;
                 }
 
-                // 1. Rimuove i tag source in modo sicuro
-                let cleanText = rawText.replace(/\/g, "");
+                // 1. Rimuove i tag source usando il costruttore RegExp stringa
+                // Pattern: -> "\\"
+                const rxSource = new RegExp("\\", "g");
+                let cleanText = rawText.replace(rxSource, "");
 
-                // 2. Metodo SPLIT (Più sicuro della Regex complessa)
-                // Questo spezza il testo in un array ogni volta che trova un orario (es. 00:00)
-                // L'array risultante sarà: ["testo_prima", "00:00", "contenuto", "00:11", "contenuto"...]
-                const parts = cleanText.split(/(\d{2}:\d{2})/g);
+                // 2. Metodo SPLIT sicuro
+                // Pattern per trovare 00:00 -> "(\\d{2}:\\d{2})"
+                const rxSplit = new RegExp("(\\d{2}:\\d{2})", "g");
+                const parts = cleanText.split(rxSplit);
 
                 const tracks = [];
                 let idCounter = 1;
 
-                // 3. Loop attraverso i pezzi.
-                // Iniziamo da 1 perché parts[0] è solitamente testo vuoto o sporco prima del primo orario
+                // Loop sui pezzi. parts[i] = tempo, parts[i+1] = contenuto
                 for (let i = 1; i < parts.length; i += 2) {
-                    const time = parts[i];       // es: 00:00
-                    const content = parts[i+1];  // es: Il testo associato...
+                    const time = parts[i];
+                    const content = parts[i+1];
 
                     if (!content) continue;
-
                     const trimmedContent = content.trim();
                     if (trimmedContent.length < 2) continue;
 
-                    // Estrazione Metadati
                     let trackTitle = "Capitolo " + idCounter;
                     let trackAuthor = "";
                     let trackDesc = trimmedContent;
 
-                    // Regex per trovare Titolo e Autore dentro il blocco di testo
-                    const rxMeta = /Titolo Opera:\s*(.*?)\s*Autore dell'Opera:\s*(.*?)\s([\s\S]*)/i;
+                    // 3. Estrazione Titolo/Autore
+                    // Pattern: Titolo Opera:... Autore dell'Opera:...
+                    const metaPattern = "Titolo Opera:\\s*(.*?)\\s*Autore dell'Opera:\\s*(.*?)\\s([\\s\\S]*)";
+                    const rxMeta = new RegExp(metaPattern, "i");
                     const metaMatch = trimmedContent.match(rxMeta);
 
                     if (metaMatch) {
@@ -184,8 +185,11 @@
                         trackTitle = "Introduzione";
                     }
 
-                    // Pulizia finale ("Fine Descrizione...")
-                    trackDesc = trackDesc.replace(/Fine (Descrizione|Introduzione).*/i, "").trim();
+                    // 4. Pulizia finale
+                    // Pattern: Fine Descrizione... oppure Fine Introduzione...
+                    const cleanEndPattern = "Fine (Descrizione|Introduzione).*";
+                    const rxCleanEnd = new RegExp(cleanEndPattern, "i");
+                    trackDesc = trackDesc.replace(rxCleanEnd, "").trim();
 
                     tracks.push({
                         id: idCounter++,
@@ -201,7 +205,7 @@
                     throw new Error("Nessun orario (00:00) trovato nel file.");
                 }
 
-                // Creazione File
+                // Creazione File JSON
                 const guideData = {
                     title: title,
                     mp3File: mp3,
@@ -309,8 +313,9 @@
         }
     };
 
-    // SETUP
+    // SETUP AUTOMATICO
     document.addEventListener('DOMContentLoaded', () => {
+        // Puoi aggiungere guide predefinite qui
         const guides = [
             // { name: "Accademia", file: "accademia.json" }
         ];
