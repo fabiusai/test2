@@ -3,100 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Audioguide Player Pro 0.2</title>
+    <title>Audioguide Player Pro 0.3</title>
     <style>
         :root {
             --primary: #b71c1c;
             --bg-color: #f4f4f4;
             --card-bg: #ffffff;
             --text-main: #212121;
-            --border: #ddd;
         }
-
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { margin: 0; background-color: var(--bg-color); color: var(--text-main); padding-bottom: 150px; }
 
         /* HEADER */
-        header {
-            background: white; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            position: sticky; top: 0; z-index: 100;
-        }
+        header { background: white; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
         .header-content { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 15px; }
-        
         .top-row { display: flex; justify-content: space-between; align-items: center; }
         h1 { margin: 0; font-size: 1.3rem; color: var(--primary); }
-
-        /* BOTTONI TOOLBAR */
-        .btn-tool {
-            background: #eee; border: 1px solid #ccc; padding: 8px 12px; border-radius: 6px; 
-            cursor: pointer; font-size: 0.9rem; font-weight: 600;
-        }
+        .btn-tool { background: #eee; border: 1px solid #ccc; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; }
         .btn-tool:hover { background: #e0e0e0; }
-        
-        /* AREA CONTROLLI */
+
+        /* CONTROLLI */
         .controls-row { display: flex; gap: 10px; }
         select#guideSelector { flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #ccc; }
-        
-        .upload-btn-wrapper { position: relative; overflow: hidden; display: inline-block; }
-        .btn-upload { 
-            border: 1px solid var(--primary); background: white; color: var(--primary); 
-            padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; 
-        }
-        .upload-btn-wrapper input[type=file] { 
-            font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; 
-        }
+        .upload-wrapper { position: relative; overflow: hidden; }
+        .btn-upload { border: 1px solid var(--primary); background: white; color: var(--primary); padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .upload-wrapper input[type=file] { font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; }
 
-        /* RICERCA */
-        .search-row { margin-top: 10px; }
-        #searchInput { width: 100%; padding: 12px; border-radius: 20px; border: 1px solid #ccc; outline: none; }
-        #searchInput:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(183,28,28,0.1); }
-
-        /* LISTA TRACCE */
+        /* LISTA E PLAYER */
         .container { max-width: 800px; margin: 0 auto; padding: 15px; }
         .track-list { list-style: none; padding: 0; margin: 0; }
-        
-        .track-card {
-            background: var(--card-bg); border-radius: 8px; padding: 15px; margin-bottom: 10px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1); cursor: pointer; border-left: 4px solid transparent;
-            transition: transform 0.2s;
-        }
-        .track-card:hover { transform: translateY(-2px); }
+        .track-card { background: white; border-radius: 8px; padding: 15px; margin-bottom: 10px; cursor: pointer; border-left: 4px solid transparent; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         .track-card.active { border-left-color: var(--primary); background-color: #fffde7; }
-
-        .card-top { display: flex; justify-content: space-between; margin-bottom: 5px; }
-        .t-title { font-weight: bold; font-size: 1.1rem; color: #333; }
-        .t-time { background: #eee; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; height: fit-content; font-weight: bold;}
-        .t-auth { font-style: italic; color: var(--primary); font-size: 0.9rem; margin-bottom: 5px; }
-        .t-desc { font-size: 0.95rem; color: #555; line-height: 1.5; }
-
-        /* PLAYER FISSO */
-        .player-bar {
-            position: fixed; bottom: 0; left: 0; width: 100%; background: white;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1); padding: 15px; text-align: center; z-index: 1000;
-        }
-        .now-playing { font-weight: bold; color: var(--primary); margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .card-top { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 5px; }
+        .t-time { background: #eee; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; }
+        .player-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); padding: 15px; text-align: center; z-index: 1000; }
+        .now-playing { font-weight: bold; color: var(--primary); margin-bottom: 8px; }
         audio { width: 100%; max-width: 800px; }
 
         /* MODALE */
-        .modal-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center;
-        }
-        .modal-box {
-            background: white; width: 90%; max-width: 600px; padding: 20px; border-radius: 10px;
-            max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; gap: 15px;
-        }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px;}
-        .close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; }
-        
-        .form-group label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9rem; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-box { background: white; width: 90%; max-width: 600px; padding: 20px; border-radius: 10px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+        .form-group label { display: block; font-weight: bold; margin-bottom: 5px; }
         .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
-        .form-group textarea { height: 150px; font-family: monospace; resize: vertical; }
-        
-        .btn-primary { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-size: 1rem; width: 100%; }
-        
-        .status-msg { text-align: center; font-size: 0.9rem; margin-top: 10px; }
-        .empty-msg { text-align: center; padding: 40px; color: #888; }
+        .form-group textarea { height: 150px; font-family: monospace; }
+        .btn-primary { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; width: 100%; font-size: 1rem; }
+        #convertStatus { text-align: center; font-weight: bold; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -104,33 +55,26 @@
 <header>
     <div class="header-content">
         <div class="top-row">
-            <h1 id="appTitle">Audioguide Player</h1>
-            <button id="btnOpenCreator" class="btn-tool">⚙️ Crea Guida</button>
+            <h1>Audioguide Player</h1>
+            <button class="btn-tool" onclick="window.app.openModal()">⚙️ Crea Guida</button>
         </div>
-        
         <div class="controls-row">
-            <select id="guideSelector">
+            <select id="guideSelector" onchange="window.app.loadRemoteGuide(this.value)">
                 <option value="" disabled selected>-- Scegli Guida --</option>
             </select>
-
-            <div class="upload-btn-wrapper">
+            <div class="upload-wrapper">
                 <button class="btn-upload">📂 Apri JSON</button>
-                <input type="file" id="jsonInput" accept=".json">
+                <input type="file" onchange="window.app.loadLocalJson(this)" accept=".json">
             </div>
         </div>
-
-        <div class="search-row">
-            <input type="text" id="searchInput" placeholder="🔍 Cerca opera o autore...">
-        </div>
+        <input type="text" id="searchInput" placeholder="🔍 Cerca..." style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px;" oninput="window.app.search(this.value)">
     </div>
 </header>
 
 <div class="container">
     <ul id="trackList" class="track-list">
-        <div class="empty-msg">
-            Nessuna guida caricata.<br><br>
-            Usa <strong>"Apri JSON"</strong> per caricare un file locale.<br>
-            Usa <strong>"Crea Guida"</strong> per convertire un testo in JSON.
+        <div style="text-align:center; padding:40px; color:#888;">
+            Carica un JSON o crea una nuova guida.
         </div>
     </ul>
 </div>
@@ -142,119 +86,128 @@
 
 <div id="creatorModal" class="modal-overlay">
     <div class="modal-box">
-        <div class="modal-header">
-            <h3>Convertitore TXT → JSON</h3>
-            <button id="btnCloseModal" class="close-btn">×</button>
+        <div style="display:flex; justify-content:space-between;">
+            <h3>Nuova Guida</h3>
+            <button onclick="window.app.closeModal()" style="border:none; background:none; font-size:1.5rem; cursor:pointer;">×</button>
         </div>
-
         <div class="form-group">
-            <label>1. Titolo Guida</label>
+            <label>Titolo Guida</label>
             <input type="text" id="newGuideTitle" placeholder="Es: Uffizi">
         </div>
         <div class="form-group">
-            <label>2. Nome File MP3 (Esatto)</label>
-            <input type="text" id="newMp3Name" placeholder="Es: uffizi.mp3">
+            <label>File MP3 (esatto)</label>
+            <input type="text" id="newMp3Name" placeholder="Es: audio.mp3">
         </div>
         <div class="form-group">
-            <label>3. Testo Audioguida</label>
-            <textarea id="txtContent" placeholder="Incolla qui il testo con i timestamp..."></textarea>
-            <div style="text-align: right; margin-top: 5px;">
-                <button id="btnLoadTxtFile" class="btn-tool" style="font-size:0.8rem">O carica file .txt</button>
-                <input type="file" id="txtFileInput" accept=".txt" style="display:none">
+            <label>Testo (copia/incolla)</label>
+            <textarea id="txtContent" placeholder="00:00 Introduzione..."></textarea>
+            <div style="text-align:right; margin-top:5px;">
+                <button onclick="document.getElementById('txtFileLoader').click()" class="btn-tool" style="font-size:0.8rem;">Carica .txt</button>
+                <input type="file" id="txtFileLoader" style="display:none" onchange="window.app.loadTxtContent(this)" accept=".txt">
             </div>
         </div>
-
-        <button id="btnDownloadJson" class="btn-primary">💾 Scarica JSON</button>
-        <div id="convertStatus" class="status-msg"></div>
+        <button class="btn-primary" onclick="window.app.generateJson()">💾 Scarica JSON</button>
+        <div id="convertStatus"></div>
     </div>
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
+    // Namespace globale per evitare conflitti e garantire visibilità
+    window.app = {
+        currentTracks: [],
         
-        // --- CONFIGURAZIONE GUIDE REMOTE ---
-        const AVAILABLE_GUIDES = [
-            // { name: "Galleria Accademia", file: "accademia.json" }
-        ];
+        // --- FUNZIONI MODALE ---
+        openModal: function() {
+            document.getElementById('creatorModal').style.display = 'flex';
+            document.getElementById('convertStatus').innerHTML = '';
+        },
 
-        // --- DOM REFERENCES ---
-        const btnOpenCreator = document.getElementById('btnOpenCreator');
-        const btnCloseModal = document.getElementById('btnCloseModal');
-        const btnDownloadJson = document.getElementById('btnDownloadJson');
-        const btnLoadTxtFile = document.getElementById('btnLoadTxtFile');
-        const creatorModal = document.getElementById('creatorModal');
-        
-        const jsonInput = document.getElementById('jsonInput');
-        const txtFileInput = document.getElementById('txtFileInput');
-        
-        const player = document.getElementById('audioPlayer');
-        const listEl = document.getElementById('trackList');
-        const trackLabel = document.getElementById('trackLabel');
-        const appTitle = document.getElementById('appTitle');
-        const searchInput = document.getElementById('searchInput');
-        const guideSelector = document.getElementById('guideSelector');
+        closeModal: function() {
+            document.getElementById('creatorModal').style.display = 'none';
+        },
 
-        const inputTitle = document.getElementById('newGuideTitle');
-        const inputMp3 = document.getElementById('newMp3Name');
-        const inputText = document.getElementById('txtContent');
-        const statusMsg = document.getElementById('convertStatus');
+        loadTxtContent: function(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => document.getElementById('txtContent').value = e.target.result;
+            reader.readAsText(file);
+        },
 
-        let currentTracks = [];
-
-        // --- EVENT LISTENERS ---
-
-        // 1. Modale
-        if(btnOpenCreator) {
-            btnOpenCreator.addEventListener('click', () => {
-                creatorModal.style.display = 'flex';
-                statusMsg.textContent = '';
-            });
-        }
-
-        if(btnCloseModal) {
-            btnCloseModal.addEventListener('click', () => {
-                creatorModal.style.display = 'none';
-            });
-        }
-        
-        window.addEventListener('click', (e) => {
-            if (e.target === creatorModal) creatorModal.style.display = 'none';
-        });
-
-        // 2. Carica TXT in textarea
-        if(btnLoadTxtFile) {
-            btnLoadTxtFile.addEventListener('click', () => txtFileInput.click());
-        }
-
-        if(txtFileInput) {
-            txtFileInput.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = (ev) => inputText.value = ev.target.result;
-                reader.readAsText(file);
-            });
-        }
-
-        // 3. Genera e Scarica JSON
-        if(btnDownloadJson) {
-            btnDownloadJson.addEventListener('click', () => {
-                const rawText = inputText.value;
-                const title = inputTitle.value || "Nuova Audioguida";
-                const mp3 = inputMp3.value || "audio.mp3";
+        // --- MOTORE DI GENERAZIONE (Cuore del fix) ---
+        generateJson: function() {
+            const status = document.getElementById('convertStatus');
+            try {
+                const rawText = document.getElementById('txtContent').value;
+                const title = document.getElementById('newGuideTitle').value || "Nuova Audioguida";
+                const mp3 = document.getElementById('newMp3Name').value || "audio.mp3";
 
                 if (!rawText.trim()) {
-                    statusMsg.innerHTML = "<span style='color:red'>Errore: Manca il testo!</span>";
+                    status.innerHTML = "<span style='color:red'>Errore: Il testo è vuoto!</span>";
                     return;
                 }
 
-                const tracks = parseText(rawText);
+                // 1. Pulizia base: Rimuove i tag source
+                // Usa RegExp con stringa sicura
+                const rxSource = new RegExp("\\", "g");
+                let cleanText = rawText.replace(rxSource, "");
+
+                // 2. Parsing Timestamp (MM:SS)
+                // Regex: (00:00) seguito da testo fino al prossimo (00:00) o fine
+                const rxSplit = new RegExp("(\\d{2}:\\d{2})([\\s\\S]*?)(?=(\\d{2}:\\d{2})|$)", "g");
+                
+                let match;
+                const tracks = [];
+                let idCounter = 1;
+
+                while ((match = rxSplit.exec(cleanText)) !== null) {
+                    const time = match[1];
+                    const content = match[2].trim();
+
+                    // 3. Estrazione Titolo/Autore
+                    let trackTitle = "Capitolo " + idCounter;
+                    let trackAuthor = "";
+                    let trackDesc = content;
+
+                    // Regex tollerante per metadati
+                    const rxMeta = new RegExp("Titolo Opera:\\s*(.*?)\\s*Autore dell'Opera:\\s*(.*?)\\s([\\s\\S]*)", "i");
+                    const metaMatch = content.match(rxMeta);
+
+                    if (metaMatch) {
+                        trackTitle = metaMatch[1].trim();
+                        trackAuthor = metaMatch[2].trim();
+                        trackDesc = metaMatch[3];
+                    } else if (content.toLowerCase().includes("introduzione")) {
+                        trackTitle = "Introduzione";
+                    } else if (content.length > 0) {
+                        // Se non trova pattern specifici, usa la prima riga come titolo
+                        const lines = content.split('\n');
+                        if (lines.length > 0 && lines[0].length < 50) {
+                            trackTitle = lines[0];
+                        }
+                    }
+
+                    // Pulizia finale descrizioni ("Fine Descrizione..." ecc.)
+                    const rxCleanEnd = new RegExp("Fine (Descrizione|Introduzione).*", "i");
+                    trackDesc = trackDesc.replace(rxCleanEnd, "").trim();
+
+                    if (trackDesc.length > 0 || trackTitle !== ("Capitolo " + idCounter)) {
+                        tracks.push({
+                            id: idCounter++,
+                            time: time,
+                            seconds: this.timeToSec(time),
+                            title: trackTitle,
+                            author: trackAuthor,
+                            desc: trackDesc
+                        });
+                    }
+                }
 
                 if (tracks.length === 0) {
-                    statusMsg.innerHTML = "<span style='color:red'>Nessun timestamp (00:00) trovato.</span>";
-                    return;
+                    throw new Error("Nessun timestamp (es. 00:00) trovato nel testo.");
                 }
 
+                // Creazione Oggetto Finale
                 const guideData = {
                     title: title,
                     mp3File: mp3,
@@ -262,6 +215,7 @@
                     tracks: tracks
                 };
 
+                // Avvio Download
                 const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(guideData, null, 2));
                 const link = document.createElement('a');
                 link.href = dataStr;
@@ -270,192 +224,121 @@
                 link.click();
                 link.remove();
 
-                statusMsg.innerHTML = `<span style='color:green'>✅ JSON Salvato! (${tracks.length} tracce)</span>`;
-            });
-        }
+                status.innerHTML = `<span style='color:green'>✅ File creato (${tracks.length} tracce)!</span>`;
 
-        // 4. Carica JSON nel Player
-        if(jsonInput) {
-            jsonInput.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if(!file) return;
-                const reader = new FileReader();
-                reader.onload = (ev) => {
-                    try {
-                        const data = JSON.parse(ev.target.result);
-                        loadGuideToPlayer(data);
-                        guideSelector.value = ""; 
-                    } catch(err) {
-                        alert("File JSON non valido");
-                    }
-                };
-                reader.readAsText(file);
-            });
-        }
-
-        // 5. Select Guide
-        if(guideSelector) {
-            if(AVAILABLE_GUIDES.length > 0) {
-                AVAILABLE_GUIDES.forEach(g => {
-                    const opt = document.createElement('option');
-                    opt.value = g.file;
-                    opt.textContent = g.name;
-                    guideSelector.appendChild(opt);
-                });
-            } else {
-                const opt = document.createElement('option');
-                opt.textContent = "Nessuna guida remota";
-                guideSelector.appendChild(opt);
+            } catch (err) {
+                console.error(err);
+                status.innerHTML = `<span style='color:red'>Errore: ${err.message}</span>`;
             }
+        },
 
-            guideSelector.addEventListener('change', (e) => {
-                const file = e.target.value;
-                if(!file || file.includes("Nessuna")) return;
+        // --- FUNZIONI PLAYER ---
+        loadRemoteGuide: function(file) {
+            if(!file) return;
+            fetch(file)
+                .then(r => r.json())
+                .then(d => this.loadData(d))
+                .catch(e => alert("Errore fetch: " + e));
+        },
 
-                fetch(file)
-                    .then(res => {
-                        if(!res.ok) throw new Error("File non trovato");
-                        return res.json();
-                    })
-                    .then(data => loadGuideToPlayer(data))
-                    .catch(err => alert("Errore caricamento: " + err.message));
-            });
-        }
+        loadLocalJson: function(input) {
+            const file = input.files[0];
+            if(!file) return;
+            const r = new FileReader();
+            r.onload = (e) => {
+                try {
+                    this.loadData(JSON.parse(e.target.result));
+                } catch(err) { alert("JSON non valido"); }
+            };
+            r.readAsText(file);
+        },
 
-        // 6. Ricerca
-        if(searchInput) {
-            searchInput.addEventListener('input', (e) => {
-                const q = e.target.value.toLowerCase();
-                if(!currentTracks.length) return;
-                
-                const filtered = currentTracks.filter(t => 
-                    t.title.toLowerCase().includes(q) || 
-                    (t.author && t.author.toLowerCase().includes(q)) ||
-                    t.desc.toLowerCase().includes(q)
-                );
-                renderList(filtered);
-            });
-        }
+        loadData: function(data) {
+            document.getElementById('audioPlayer').src = data.mp3File;
+            this.currentTracks = data.tracks;
+            this.renderList(this.currentTracks);
+            document.getElementById('trackLabel').innerText = "Guida caricata: " + data.title;
+        },
 
-        // 7. Time Update
-        player.addEventListener('timeupdate', () => {
-            const cur = player.currentTime;
-            const track = [...currentTracks].reverse().find(t => t.seconds <= cur + 1);
-            if(track) updateActiveTrackUI(track);
-        });
-
-        /* --- CORE FUNCTIONS --- */
-
-        function loadGuideToPlayer(data) {
-            appTitle.textContent = data.title || "Audioguida";
-            player.src = data.mp3File;
-            currentTracks = data.tracks || [];
-            renderList(currentTracks);
-            player.load();
-            trackLabel.textContent = "Guida caricata: " + (data.title);
-        }
-
-        function renderList(tracks) {
-            listEl.innerHTML = '';
+        renderList: function(tracks) {
+            const list = document.getElementById('trackList');
+            list.innerHTML = "";
+            
             if(tracks.length === 0) {
-                listEl.innerHTML = '<div class="empty-msg">Nessuna traccia trovata.</div>';
+                list.innerHTML = "<div style='padding:20px; text-align:center'>Nessun risultato</div>";
                 return;
             }
 
             tracks.forEach(t => {
                 const li = document.createElement('li');
-                li.className = 'track-card';
+                li.className = "track-card";
                 li.dataset.sec = t.seconds;
-                
-                li.addEventListener('click', () => {
-                    player.currentTime = t.seconds;
-                    player.play().catch(e => console.log("Autoplay bloccato"));
-                    updateActiveTrackUI(t);
-                });
-
+                li.onclick = () => {
+                    const p = document.getElementById('audioPlayer');
+                    p.currentTime = t.seconds;
+                    p.play();
+                    this.updateUI(t);
+                };
                 li.innerHTML = `
                     <div class="card-top">
-                        <span class="t-title">${t.title}</span>
+                        <span>${t.title}</span>
                         <span class="t-time">${t.time}</span>
                     </div>
-                    ${t.author ? `<div class="t-auth">${t.author}</div>` : ''}
-                    <div class="t-desc">${t.desc}</div>
+                    ${t.author ? `<div style="font-style:italic; color:#b71c1c; font-size:0.9rem; margin-bottom:5px">${t.author}</div>` : ''}
+                    <div style="font-size:0.9rem; color:#555;">${t.desc}</div>
                 `;
-                listEl.appendChild(li);
+                list.appendChild(li);
             });
-        }
+        },
 
-        function updateActiveTrackUI(track) {
-            trackLabel.textContent = `${track.time} - ${track.title}`;
+        updateUI: function(track) {
+            document.getElementById('trackLabel').innerText = `${track.time} - ${track.title}`;
             document.querySelectorAll('.track-card').forEach(c => c.classList.remove('active'));
-            const activeCard = document.querySelector(`.track-card[data-sec="${track.seconds}"]`);
-            if(activeCard) {
-                activeCard.classList.add('active');
-                activeCard.scrollIntoView({behavior: "smooth", block: "center"});
+            const active = document.querySelector(`.track-card[data-sec="${track.seconds}"]`);
+            if(active) {
+                active.classList.add('active');
+                active.scrollIntoView({behavior:"smooth", block:"center"});
             }
-        }
+        },
 
-        function parseText(text) {
-            // USIAMO new RegExp PER EVITARE ERRORI DI PARSING CON LE SLASH
-            
-            // 1. Rimuovi tag source
-            const rxSource = new RegExp("\\", "g");
-            const cleanText = text.replace(rxSource, "");
-            
-            // 2. Regex Principale (MM:SS)
-            // Pattern: (\d{2}:\d{2})([\s\S]*?)(?=(\d{2}:\d{2})|$)
-            const rxMain = new RegExp("(\\d{2}:\\d{2})([\\s\\S]*?)(?=(\\d{2}:\\d{2})|$)", "g");
-            
-            let match;
-            const tracks = [];
-            let id = 1;
+        search: function(q) {
+            const term = q.toLowerCase();
+            const filtered = this.currentTracks.filter(t => 
+                t.title.toLowerCase().includes(term) || 
+                (t.author && t.author.toLowerCase().includes(term)) ||
+                t.desc.toLowerCase().includes(term)
+            );
+            this.renderList(filtered);
+        },
 
-            while ((match = rxMain.exec(cleanText)) !== null) {
-                const timeStr = match[1];
-                const content = match[2].trim();
-                
-                let title = "Capitolo " + id;
-                let author = "";
-                let desc = content;
-
-                // 3. Regex Metadati (Titolo/Autore)
-                // Pattern: Titolo Opera:\s*(.*?)\s*Autore dell'Opera:\s*(.*?)\s([\s\S]*)
-                const rxMeta = new RegExp("Titolo Opera:\\s*(.*?)\\s*Autore dell'Opera:\\s*(.*?)\\s([\\s\\S]*)", "i");
-                const meta = content.match(rxMeta);
-                
-                if (meta) {
-                    title = meta[1].trim();
-                    author = meta[2].trim();
-                    desc = meta[3];
-                } else if (content.toLowerCase().includes("introduzione")) {
-                    title = "Introduzione";
-                }
-
-                // 4. Pulizia Descrizione (Regex)
-                const rxCleanDesc = new RegExp("Fine Descrizione.*", "i");
-                const rxCleanIntro = new RegExp("Fine Introduzione.*", "i");
-                
-                desc = desc.replace(rxCleanDesc, "").replace(rxCleanIntro, "").trim();
-
-                if (desc.length > 2) {
-                    tracks.push({
-                        id: id++,
-                        time: timeStr,
-                        seconds: timeToSeconds(timeStr),
-                        title: title,
-                        author: author,
-                        desc: desc
-                    });
-                }
-            }
-            return tracks;
-        }
-
-        function timeToSeconds(str) {
+        timeToSec: function(str) {
             const p = str.split(':');
-            return parseInt(p[0]) * 60 + parseInt(p[1]);
+            return parseInt(p[0])*60 + parseInt(p[1]);
         }
+    };
 
+    // --- SETUP INIZIALE ---
+    document.addEventListener('DOMContentLoaded', () => {
+        // Aggiungi le guide remote qui
+        const guides = [
+            // { name: "Accademia", file: "accademia.json" }
+        ];
+
+        const sel = document.getElementById('guideSelector');
+        guides.forEach(g => {
+            const opt = document.createElement('option');
+            opt.value = g.file;
+            opt.textContent = g.name;
+            sel.appendChild(opt);
+        });
+
+        // Sync Audio
+        const player = document.getElementById('audioPlayer');
+        player.addEventListener('timeupdate', () => {
+            const cur = player.currentTime;
+            const track = [...window.app.currentTracks].reverse().find(t => t.seconds <= cur + 1);
+            if(track) window.app.updateUI(track);
+        });
     });
 </script>
 
