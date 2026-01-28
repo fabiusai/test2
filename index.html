@@ -131,7 +131,7 @@
             reader.readAsText(file);
         },
 
-        // --- MOTORE "NO-REGEX" (Manipolazione Stringhe Pura) ---
+        // --- MOTORE "REGEX" (Più robusto e preciso) ---
         generateJson: function() {
             const status = document.getElementById('convertStatus');
             try {
@@ -140,124 +140,88 @@
                 const mp3 = document.getElementById('newMp3Name').value || "audio.mp3";
 
                 if (!rawText || rawText.length < 5) {
-                    status.innerHTML = "<span style='color:red'>Errore: Testo vuoto!</span>";
-                    return;
+                    throw new Error("Il campo testo è vuoto.");
                 }
 
-                // 1. Pulizia senza Regex
-                // Cicla finché trova "", start);
-                    if (end !== -1) {
-                        // Rimuove la parte tra [ e ]
-                        rawText = rawText.substring(0, start) + rawText.substring(end + 1);
-                    } else {
-                        break; // Break di sicurezza
-                    }
-                }
+                // 1. Pulizia Iniziale
+                // Rimuove i tag tipo o
+                rawText = rawText.replace(/\[(?:source|cite):\s*[^\]]+\]/gi, "");
+                // Normalizza i 'a capo'
+                rawText = rawText.replace(/\r\n/g, "\n");
 
-                // 2. Trova tutti gli orari (MM:SS) manualmente
-                // Scansiona il testo carattere per carattere cercando i due punti :
-                const chunks = [];
-                let lastIndex = 0;
-                let lastTime = null;
-
-                for (let i = 0; i < rawText.length - 4; i++) {
-                    if (rawText[i + 2] === ':') {
-                        // Controlla se i caratteri intorno sono numeri
-                        let h1 = rawText[i];
-                        let h2 = rawText[i+1];
-                        let m1 = rawText[i+3];
-                        let m2 = rawText[i+4];
-
-                        if (!isNaN(h1) && !isNaN(h2) && !isNaN(m1) && !isNaN(m2) && h1 !== ' ' && m2 !== ' ') {
-                            // Trovato orario!
-                            let currentTime = rawText.substring(i, i + 5);
-                            
-                            // Se avevamo un orario precedente, salviamo il blocco di testo tra il precedente e questo
-                            if (lastTime !== null) {
-                                let content = rawText.substring(lastIndex, i).trim();
-                                chunks.push({ time: lastTime, content: content });
-                            }
-
-                            lastTime = currentTime;
-                            lastIndex = i + 5; // Salta l'orario
-                        }
-                    }
-                }
-
-                // Aggiungi l'ultimo pezzo
-                if (lastTime !== null) {
-                    let content = rawText.substring(lastIndex).trim();
-                    chunks.push({ time: lastTime, content: content });
-                }
-
-                if (chunks.length === 0) {
-                    throw new Error("Nessun orario 00:00 trovato.");
-                }
-
-                // 3. Elabora i blocchi per trovare Titolo/Autore (Sempre senza Regex)
+                // 2. Regex per trovare gli orari (MM:SS) all'inizio riga o preceduti da spazio
+                // Cattura l'orario e tutto il testo che segue fino al prossimo orario
+                const splitRegex = /(\d{1,2}:\d{2})/g;
+                
+                // Dividiamo il testo in base agli orari
+                // "split" creerà un array tipo: ["Testo pre", "00:00", "Testo...", "00:40", "Testo..."]
+                const parts = rawText.split(splitRegex);
+                
                 const tracks = [];
                 let idCounter = 1;
 
-                for (let chunk of chunks) {
-                    let content = chunk.content;
-                    if (content.length < 2) continue;
+                // Cicliamo l'array. Saltiamo la parte 0 se è vuota o spazzatura prima del primo orario
+                for (let i = 1; i < parts.length; i += 2) {
+                    const timeStr = parts[i];       // es: "00:00"
+                    let content = parts[i + 1];   // Il testo associato
+                    
+                    if(!content) continue;
+
+                    content = content.trim();
+
+                    // --- PARSING CONTENUTO ---
+                    
+                    // Pulizia specifica per questo formato: rimuove "Fine Descrizione..." o "Fine Introduzione"
+                    // che spesso rimangono all'inizio del blocco successivo
+                    content = content.replace(/^(Fine Descrizione|Fine Introduzione).*?(\n|$)/im, "").trim();
 
                     let trackTitle = "Capitolo " + idCounter;
                     let trackAuthor = "";
                     let trackDesc = content;
 
-                    // Cerca "Titolo Opera:"
-                    let tagTitolo = "Titolo Opera:";
-                    let tagAutore = "Autore dell'Opera:";
-                    
-                    let idxTitolo = content.indexOf(tagTitolo);
-                    let idxAutore = content.indexOf(tagAutore);
+                    // Regex per catturare "Titolo Opera:" e "Autore dell'Opera:"
+                    // Cerca "Titolo Opera:" seguito da qualsiasi cosa finché non trova "Autore..." o fine riga
+                    const titleMatch = content.match(/Titolo Opera:\s*(.*?)(?=\s*Autore dell'Opera:|\n|$)/i);
+                    const authorMatch = content.match(/Autore dell'Opera:\s*(.*?)(?=\n|$)/i);
 
-                    if (idxTitolo !== -1 && idxAutore !== -1) {
-                        // Estrai Titolo
-                        let startT = idxTitolo + tagTitolo.length;
-                        trackTitle = content.substring(startT, idxAutore).trim();
-                        // Rimuovi virgola finale se presente
+                    if (titleMatch) {
+                        trackTitle = titleMatch[1].trim();
+                        // Rimuove virgole finali
                         if(trackTitle.endsWith(',')) trackTitle = trackTitle.slice(0, -1);
-
-                        // Estrai Autore
-                        let startA = idxAutore + tagAutore.length;
-                        // Cerchiamo la fine della riga o un punto per l'autore
-                        // Assumiamo che la descrizione inizi dopo l'autore. Spesso c'è un "a capo" o il testo continua.
-                        // Nel file fornito l'autore è seguito dal testo. Cerchiamo di isolarlo.
-                        // Prendiamo tutto il resto come descrizione per ora, poi puliamo.
-                        let rest = content.substring(startA).trim();
-                        
-                        // Semplificazione: L'autore finisce spesso dove inizia una frase maiuscola o dopo un po'.
-                        // Per non complicare, mettiamo l'autore nel campo e puliamo la descrizione
-                        // In questo formato specifico, l'autore è solitamente corto.
-                        // Cerchiamo il primo punto o a capo.
-                        let endLine = rest.indexOf("\n");
-                        if (endLine === -1) endLine = 50; // Fallback
-                        trackAuthor = rest.substring(0, endLine).trim();
-                        trackDesc = rest.substring(endLine).trim();
-
-                    } else if (content.toLowerCase().indexOf("introduzione") !== -1) {
-                        trackTitle = "Introduzione";
+                    } else {
+                        // Se non c'è "Titolo Opera", controlliamo se è l'introduzione
+                        if(timeStr === "00:00" || content.toLowerCase().includes("introduzione")) {
+                            trackTitle = "Introduzione";
+                            // Prova a prendere la prima riga come titolo se sembra un titolo
+                            const firstLine = content.split('\n')[0];
+                            if(firstLine.length < 50) trackTitle = firstLine;
+                        }
                     }
 
-                    // Pulizia "Fine Descrizione" (Manuale)
-                    let fineTag = "Fine Descrizione";
-                    let idxFine = trackDesc.indexOf(fineTag);
-                    if (idxFine !== -1) trackDesc = trackDesc.substring(0, idxFine).trim();
+                    if (authorMatch) {
+                        trackAuthor = authorMatch[1].trim();
+                    }
 
-                    let fineIntro = "Fine Introduzione";
-                    let idxIntroFine = trackDesc.indexOf(fineIntro);
-                    if (idxIntroFine !== -1) trackDesc = trackDesc.substring(0, idxIntroFine).trim();
+                    // Puliamo la descrizione rimuovendo le righe di Titolo e Autore
+                    trackDesc = trackDesc.replace(/Titolo Opera:.*(\n|$)/i, "")
+                                         .replace(/Autore dell'Opera:.*(\n|$)/i, "")
+                                         .trim();
+
+                    // Rimuoviamo eventuali "Fine Descrizione..." che potrebbero essere alla fine
+                    trackDesc = trackDesc.replace(/(Fine Descrizione|Fine Introduzione).*$/i, "").trim();
 
                     tracks.push({
                         id: idCounter++,
-                        time: chunk.time,
-                        seconds: this.timeToSec(chunk.time),
+                        time: timeStr,
+                        seconds: this.timeToSec(timeStr),
                         title: trackTitle,
                         author: trackAuthor,
                         desc: trackDesc
                     });
+                }
+
+                if (tracks.length === 0) {
+                    throw new Error("Nessun orario (MM:SS) trovato nel testo.");
                 }
 
                 // Generazione File
@@ -371,6 +335,8 @@
     document.addEventListener('DOMContentLoaded', () => {
         const guides = [];
         const sel = document.getElementById('guideSelector');
+        // Esempio: Se hai guide remote su GitHub, aggiungile qui
+        // guides.push({ name: "Firenze Accademia", file: "guides/firenze.json" });
         guides.forEach(g => {
             const opt = document.createElement('option');
             opt.value = g.file;
@@ -381,6 +347,7 @@
         const player = document.getElementById('audioPlayer');
         player.addEventListener('timeupdate', () => {
             const cur = player.currentTime;
+            // Trova la traccia corrente
             const track = [...window.app.currentTracks].reverse().find(t => t.seconds <= cur + 1);
             if(track) window.app.updateUI(track);
         });
