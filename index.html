@@ -6,185 +6,420 @@
     <title>Audioguida Galleria dell'Accademia</title>
     <style>
         :root {
-            --primary: #8B0000;
-            --secondary: #F5F5DC;
-            --text: #333;
-            --active-bg: #ffe0b2;
+            --primary: #b71c1c; /* Rosso scuro museale */
+            --bg-color: #f9f9f9;
+            --card-bg: #ffffff;
+            --text-main: #212121;
+            --text-secondary: #5f6368;
+            --accent: #ffc107;
         }
-        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { margin: 0; background-color: var(--secondary); color: var(--text); padding-bottom: 140px; }
-        
-        header { background: var(--primary); color: white; padding: 1rem; text-align: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        h1 { margin: 0; font-size: 1.2rem; }
-        
-        .container { max-width: 800px; margin: 0 auto; padding: 15px; }
-        
-        /* Ricerca */
-        .search-container { position: sticky; top: 60px; background: var(--secondary); z-index: 90; padding: 10px 0; }
-        #searchInput { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; }
-        
-        /* Lista */
-        .track-list { list-style: none; padding: 0; }
-        .track-card { background: white; border-radius: 8px; padding: 15px; margin-bottom: 10px; cursor: pointer; border-left: 5px solid transparent; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .track-card:hover { transform: translateY(-2px); }
-        .track-card.active { border-left-color: var(--primary); background-color: var(--active-bg); }
-        
-        .track-header { display: flex; justify-content: space-between; font-weight: bold; color: var(--primary); margin-bottom: 5px; }
-        .track-time { background: #eee; color: #333; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; }
-        .track-excerpt { font-size: 0.9rem; color: #555; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
-        /* Player */
-        .fixed-player { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 10px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); text-align: center; z-index: 1000; }
-        .player-info { margin-bottom: 5px; font-weight: bold; color: var(--primary); font-size: 0.9rem; }
-        audio { width: 100%; max-width: 800px; }
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding-bottom: 160px; /* Spazio per il player */
+        }
+
+        /* Header */
+        header {
+            background-color: white;
+            padding: 1rem;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            text-align: center;
+        }
+
+        h1 { margin: 0; font-size: 1.3rem; color: var(--primary); }
+        .subtitle { font-size: 0.9rem; color: var(--text-secondary); margin-top: 4px; }
+
+        /* Search */
+        .search-wrapper {
+            padding: 15px;
+            max-width: 800px;
+            margin: 0 auto;
+            position: sticky;
+            top: 70px; /* Sotto l'header */
+            z-index: 90;
+            background: var(--bg-color);
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 25px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            outline: none;
+            transition: all 0.3s;
+        }
+        #searchInput:focus { border-color: var(--primary); box-shadow: 0 2px 8px rgba(183, 28, 28, 0.2); }
+
+        /* List */
+        .container { max-width: 800px; margin: 0 auto; padding: 0 15px; }
+        .track-list { list-style: none; padding: 0; margin: 0; }
+
+        .track-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+            border-left: 4px solid transparent;
+        }
+
+        .track-card:hover { transform: translateY(-2px); }
         
-        #error-msg { color: red; text-align: center; padding: 20px; display: none; background: white; margin-top: 10px; border-radius: 8px; }
+        /* Stato Attivo */
+        .track-card.active {
+            border-left-color: var(--primary);
+            background-color: #fff3e0;
+        }
+        .track-card.active .track-title { color: #d84315; }
+
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+        .track-title { font-weight: 700; font-size: 1.1rem; margin: 0; line-height: 1.3; }
+        .track-time { 
+            background: #eee; color: #444; 
+            padding: 4px 8px; border-radius: 6px; 
+            font-size: 0.8rem; font-weight: 600; white-space: nowrap; margin-left: 10px;
+        }
+
+        .track-author { font-size: 0.9rem; color: var(--primary); font-style: italic; margin-bottom: 8px; }
+        .track-desc { font-size: 0.95rem; color: var(--text-secondary); line-height: 1.5; }
+
+        /* Player Fisso */
+        .player-bar {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: white;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            padding: 15px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .now-playing {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 10px;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            padding: 0 20px;
+        }
+
+        audio { width: 100%; max-width: 800px; height: 40px; }
     </style>
 </head>
 <body>
 
 <header>
     <h1>Galleria dell'Accademia</h1>
-    <div style="font-size: 0.9rem; opacity: 0.9;">Firenze - Audioguida</div>
+    <div class="subtitle">Firenze - Audioguida</div>
 </header>
 
-<div class="container">
-    <div class="search-container">
-        <input type="text" id="searchInput" placeholder="Cerca opera o autore...">
-    </div>
-    
-    <div id="error-msg"></div>
-    <div id="loading" style="text-align:center; margin-top:20px;">Caricamento audioguida...</div>
-    <ul class="track-list" id="trackList"></ul>
+<div class="search-wrapper">
+    <input type="text" id="searchInput" placeholder="Cerca opera o autore...">
 </div>
 
-<div class="fixed-player">
-    <div class="player-info" id="currentTrackLabel">Seleziona un'opera</div>
+<div class="container">
+    <ul class="track-list" id="trackList">
+        </ul>
+</div>
+
+<div class="player-bar">
+    <div class="now-playing" id="currentTrackLabel">Seleziona un'opera per iniziare</div>
     <audio id="audioPlayer" controls controlsList="nodownload">
         <source src="Galleria_dell'Accademia_di_Firenze.mp3" type="audio/mpeg">
+        Il tuo browser non supporta l'audio.
     </audio>
 </div>
 
 <script>
-    // NOME DEI FILE - Devono essere identici a quelli caricati su GitHub
-    const TXT_FILE = "Galleria_dell'Accademia_di_Firenze.txt";
-    
-    let allTracks = [];
+    /* * DATABASE JSON INTEGRATO 
+     * Ho estratto i dati dal file .txt fornito.
+     * I secondi sono pre-calcolati per evitare errori di calcolo.
+     */
+    const tracksDB = [
+        {
+            "id": 1,
+            "time": "00:00",
+            "seconds": 0,
+            "title": "Introduzione Galleria dell'Accademia",
+            "author": "",
+            "desc": "Benvenuti alla Galleria. Un percorso che inizia dalla Sala del Colosso fino alla Tribuna del David."
+        },
+        {
+            "id": 2,
+            "time": "00:40",
+            "seconds": 40,
+            "title": "Ratto delle Sabine",
+            "author": "Giambologna",
+            "desc": "Imponente modello in terra cruda al centro della Sala del Colosso. Notate la 'forma serpentinata' e la spirale dei tre corpi."
+        },
+        {
+            "id": 3,
+            "time": "01:11",
+            "seconds": 71,
+            "title": "Madonna col Bambino (Madonna del Mare)",
+            "author": "Sandro Botticelli",
+            "desc": "Opera giovanile di Botticelli. Il nome deriva dal paesaggio marino sullo sfondo. La melagrana è simbolo della Passione."
+        },
+        {
+            "id": 4,
+            "time": "01:44",
+            "seconds": 104,
+            "title": "Cassone Adimari",
+            "author": "Lo Scheggia (Giovanni di Ser Giovanni)",
+            "desc": "Pannello frontale di un cassone nuziale. Raffigura un corteo nuziale con il Battistero sullo sfondo e abiti sfarzosi del '400."
+        },
+        {
+            "id": 5,
+            "time": "02:18",
+            "seconds": 138,
+            "title": "Tebaide",
+            "author": "Paolo Uccello",
+            "desc": "Racconta la vita dei santi eremiti. Tante piccole storie, struttura geometrica e colori vivaci tipici del maestro della prospettiva."
+        },
+        {
+            "id": 6,
+            "time": "02:49",
+            "seconds": 169,
+            "title": "Santi Stefano, Giacomo e Pietro",
+            "author": "Domenico Ghirlandaio",
+            "desc": "Figure monumentali e realistiche. San Stefano porta la pietra del martirio sulla testa. Opera della bottega del maestro di Michelangelo."
+        },
+        {
+            "id": 7,
+            "time": "03:21",
+            "seconds": 201,
+            "title": "Schiavo giovane",
+            "author": "Michelangelo Buonarroti",
+            "desc": "Primo prigione a sinistra. Le ginocchia piegate, il volto coperto. Esempio di come l'artista facesse emergere la figura dalla parte frontale."
+        },
+        {
+            "id": 8,
+            "time": "03:59",
+            "seconds": 239,
+            "title": "Schiavo barbuto",
+            "author": "Michelangelo Buonarroti",
+            "desc": "Sulla destra. Forse il più finito dei quattro. Si vede la tensione muscolare del torso che cerca di liberarsi dalla pietra."
+        },
+        {
+            "id": 9,
+            "time": "04:28",
+            "seconds": 268,
+            "title": "Schiavo Atlante",
+            "author": "Michelangelo Buonarroti",
+            "desc": "La testa è imprigionata in un masso quadrato che sembra pesare sulle spalle. Esempio potente del 'Non Finito'."
+        },
+        {
+            "id": 10,
+            "time": "04:58",
+            "seconds": 298,
+            "title": "Schiavo che si desta",
+            "author": "Michelangelo Buonarroti",
+            "desc": "Ultimo a destra. Il corpo si inarca in una torsione potente. Destinate alla tomba di Giulio II a Roma."
+        },
+        {
+            "id": 11,
+            "time": "05:28",
+            "seconds": 328,
+            "title": "San Matteo",
+            "author": "Michelangelo Buonarroti",
+            "desc": "Commissionata per il Duomo. Posa in rotazione, con il libro in mano. Visibili i segni della gradina (scalpello dentato)."
+        },
+        {
+            "id": 12,
+            "time": "06:01",
+            "seconds": 361,
+            "title": "Pietà di Palestrina",
+            "author": "Attr. Michelangelo Buonarroti",
+            "desc": "Gruppo scultoreo imponente sulla destra della tribuna. Cristo sorretto dalla Vergine e dalla Maddalena. Grande pathos nel corpo che scivola."
+        },
+        {
+            "id": 13,
+            "time": "06:31",
+            "seconds": 391,
+            "title": "David",
+            "author": "Michelangelo Buonarroti",
+            "desc": "Il capolavoro assoluto (1501-1504). Ritratto nell'attimo prima dello scontro. Incarnazione della virtù civica fiorentina."
+        },
+        {
+            "id": 14,
+            "time": "07:09",
+            "seconds": 429,
+            "title": "Busto di Michelangelo",
+            "author": "Daniele da Volterra",
+            "desc": "Bronzo che ritrae l'artista in età avanzata. Notate il naso rotto e l'espressione malinconica."
+        },
+        {
+            "id": 15,
+            "time": "07:37",
+            "seconds": 457,
+            "title": "L'Ammostatore",
+            "author": "Lorenzo Bartolini",
+            "desc": "Gipsoteca. Fanciullo che pigia l'uva. Bartolini rivoluzionò la scultura introducendo il 'bello naturale' e usando modelli dal popolo."
+        },
+        {
+            "id": 16,
+            "time": "08:13",
+            "seconds": 493,
+            "title": "Fiducia in Dio",
+            "author": "Lorenzo Bartolini",
+            "desc": "Figura femminile nuda in preghiera. Rappresenta l'idea astratta della fede attraverso la bellezza naturale."
+        },
+        {
+            "id": 17,
+            "time": "08:42",
+            "seconds": 522,
+            "title": "Albero della vita",
+            "author": "Pacino di Buonaguida",
+            "desc": "Risale al 1300. Crocifissione come albero con dodici rami. Un'enciclopedia teologica dipinta da 'leggere'."
+        },
+        {
+            "id": 18,
+            "time": "09:15",
+            "seconds": 555,
+            "title": "Incoronazione della Vergine",
+            "author": "Jacopo di Cione",
+            "desc": "Grande pala d'altare a fondo oro. Ricchezza dei tessuti punzonati e solennità della scena divina."
+        },
+        {
+            "id": 19,
+            "time": "09:44",
+            "seconds": 584,
+            "title": "Viola Medicea",
+            "author": "Antonio Stradivari",
+            "desc": "Costruita nel 1690 per il Principe Ferdinando de' Medici. Intarsi in madreperla e stemma mediceo. Unica conservata perfettamente."
+        },
+        {
+            "id": 20,
+            "time": "10:16",
+            "seconds": 616,
+            "title": "Violoncello Mediceo",
+            "author": "Antonio Stradivari",
+            "desc": "Faceva parte del Quintetto Mediceo. Vernice rossa splendida e qualità del suono inarrivabile."
+        },
+        {
+            "id": 21,
+            "time": "10:42",
+            "seconds": 642,
+            "title": "Spinetta Ovale",
+            "author": "Bartolomeo Cristofori",
+            "desc": "Rarissimo strumento dalla forma allungata. Testimonianza della sperimentazione tecnica alla corte dei Medici."
+        },
+        {
+            "id": 22,
+            "time": "11:11",
+            "seconds": 671,
+            "title": "Pianoforte di Cristofori",
+            "author": "Bartolomeo Cristofori",
+            "desc": "Uno dei primi pianoforti mai costruiti. Meccanismo che permetteva di suonare 'piano' e 'forte'. Antenato dei moderni pianoforti."
+        }
+    ];
+
+    /* LOGICA APPLICAZIONE */
     const player = document.getElementById('audioPlayer');
     const list = document.getElementById('trackList');
     const label = document.getElementById('currentTrackLabel');
-    const errorMsg = document.getElementById('error-msg');
+    const searchInput = document.getElementById('searchInput');
 
-    // Caricamento Dati
-    fetch(TXT_FILE)
-        .then(res => {
-            if (!res.ok) throw new Error(`Impossibile leggere il file ${TXT_FILE} (Errore ${res.status})`);
-            return res.text();
-        })
-        .then(text => processData(text))
-        .catch(err => {
-            document.getElementById('loading').style.display = 'none';
-            errorMsg.style.display = 'block';
-            errorMsg.innerHTML = `<strong>Errore:</strong> ${err.message}<br>Assicurati che il file .txt sia caricato nella repository.`;
-        });
-
-    function processData(text) {
-        document.getElementById('loading').style.display = 'none';
-        
-        // Rimuove tag source e fa parsing
-        const cleanText = text.replace(/\/g, "");
-        const regex = /(\d{2}:\d{2})([\s\S]*?)(?=(\d{2}:\d{2})|$)/g;
-        
-        let match;
-        while ((match = regex.exec(cleanText)) !== null) {
-            const time = match[1];
-            const content = match[2].trim();
-            
-            // Estrazione metadati
-            let title = "Introduzione";
-            let author = "";
-            let desc = content;
-            
-            // Cerca pattern Titolo/Autore
-            const meta = content.match(/Titolo Opera:\s*(.*?)\s*Autore dell'Opera:\s*(.*?)\s([\s\S]*)/i);
-            if (meta) {
-                title = meta[1].trim();
-                author = meta[2].trim();
-                desc = meta[3].replace(/Fine Descrizione.*/i, "").trim();
-            } else if (content.toLowerCase().includes("introduzione")) {
-                title = "Introduzione";
-                desc = content.replace(/Fine Introduzione.*/i, "").trim();
-            }
-
-            if (desc.length > 5) {
-                allTracks.push({ 
-                    seconds: timeToSec(time), 
-                    displayTime: time, 
-                    title, author, desc 
-                });
-            }
+    // Funzione per generare l'HTML della lista
+    function renderList(items) {
+        list.innerHTML = '';
+        if (items.length === 0) {
+            list.innerHTML = '<div style="padding:20px; text-align:center; color:#666;">Nessun risultato trovato</div>';
+            return;
         }
-        render(allTracks);
-    }
 
-    function render(tracks) {
-        list.innerHTML = "";
-        tracks.forEach(t => {
+        items.forEach(track => {
             const li = document.createElement('li');
-            li.className = "track-card";
-            li.dataset.sec = t.seconds;
-            li.onclick = () => {
-                player.currentTime = t.seconds;
-                player.play();
-                updateActive(t);
-            };
+            li.className = 'track-card';
+            li.setAttribute('data-sec', track.seconds);
+            li.onclick = () => playTrack(track);
+
             li.innerHTML = `
-                <div class="track-header">
-                    <span>${t.title}</span>
-                    <span class="track-time">${t.displayTime}</span>
+                <div class="card-header">
+                    <div class="track-title">${track.title}</div>
+                    <div class="track-time">${track.time}</div>
                 </div>
-                ${t.author ? `<div style="font-size:0.9rem; color:#666; margin-bottom:5px;"><i>${t.author}</i></div>` : ''}
-                <div class="track-excerpt">${t.desc}</div>
+                ${track.author ? `<div class="track-author">${track.author}</div>` : ''}
+                <div class="track-desc">${track.desc}</div>
             `;
             list.appendChild(li);
         });
     }
 
-    function timeToSec(str) {
-        const p = str.split(':');
-        return parseInt(p[0])*60 + parseInt(p[1]);
+    // Funzione Play
+    function playTrack(track) {
+        player.currentTime = track.seconds;
+        player.play();
+        updateUI(track);
+        
+        // Scroll verso la card attiva
+        setTimeout(() => {
+            const activeCard = document.querySelector(`.track-card[data-sec="${track.seconds}"]`);
+            if(activeCard) activeCard.scrollIntoView({behavior: "smooth", block: "center"});
+        }, 100);
     }
 
-    function updateActive(track) {
-        label.textContent = `${track.displayTime} - ${track.title}`;
+    // Aggiorna interfaccia (evidenzia card)
+    function updateUI(track) {
+        label.textContent = `${track.time} - ${track.title}`;
+        
+        // Rimuovi active da tutti
         document.querySelectorAll('.track-card').forEach(c => c.classList.remove('active'));
-        const active = document.querySelector(`.track-card[data-sec="${track.seconds}"]`);
-        if(active) {
-            active.classList.add('active');
-            active.scrollIntoView({behavior: "smooth", block: "center"});
-        }
+        
+        // Aggiungi active al corrente
+        const activeCard = document.querySelector(`.track-card[data-sec="${track.seconds}"]`);
+        if(activeCard) activeCard.classList.add('active');
     }
 
-    // Sync Audio -> Scroll
+    // Sincronizzazione automatica mentre l'audio va
     player.addEventListener('timeupdate', () => {
-        const cur = player.currentTime;
-        const track = allTracks.slice().reverse().find(t => t.seconds <= cur + 1);
-        if(track) {
-            const active = document.querySelector(`.track-card[data-sec="${track.seconds}"]`);
-            if(active && !active.classList.contains('active')) updateActive(track);
+        const currentSec = player.currentTime;
+        // Trova l'ultimo capitolo iniziato
+        // Usiamo [...tracksDB] per creare una copia e non invertire l'originale
+        const currentTrack = [...tracksDB].reverse().find(t => t.seconds <= currentSec + 1);
+
+        if (currentTrack) {
+            const activeCard = document.querySelector('.track-card.active');
+            // Aggiorna solo se l'ID è diverso per evitare sfarfallii
+            if (!activeCard || activeCard.getAttribute('data-sec') != currentTrack.seconds) {
+                updateUI(currentTrack);
+            }
         }
     });
 
     // Ricerca
-    document.getElementById('searchInput').addEventListener('input', (e) => {
-        const q = e.target.value.toLowerCase();
-        const filtered = allTracks.filter(t => 
-            t.title.toLowerCase().includes(q) || 
-            t.author.toLowerCase().includes(q) || 
-            t.desc.toLowerCase().includes(q)
+    searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        const filtered = tracksDB.filter(t => 
+            t.title.toLowerCase().includes(query) || 
+            t.author.toLowerCase().includes(query) ||
+            t.desc.toLowerCase().includes(query)
         );
-        render(filtered);
+        renderList(filtered);
     });
+
+    // Avvio iniziale
+    renderList(tracksDB);
+
 </script>
 
 </body>
