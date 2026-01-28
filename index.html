@@ -3,423 +3,408 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Audioguida Galleria dell'Accademia</title>
+    <title>Audioguide Player Pro</title>
     <style>
         :root {
-            --primary: #b71c1c; /* Rosso scuro museale */
-            --bg-color: #f9f9f9;
+            --primary: #b71c1c;
+            --bg-color: #f5f5f5;
             --card-bg: #ffffff;
             --text-main: #212121;
-            --text-secondary: #5f6368;
-            --accent: #ffc107;
+            --text-sec: #666;
+            --border: #ddd;
         }
 
-        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { margin: 0; background-color: var(--bg-color); color: var(--text-main); padding-bottom: 160px; }
 
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            padding-bottom: 160px; /* Spazio per il player */
-        }
-
-        /* Header */
+        /* HEADER & CONTROLS */
         header {
-            background-color: white;
-            padding: 1rem;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            text-align: center;
+            background: white; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: sticky; top: 0; z-index: 100; display: flex; flex-direction: column; gap: 10px;
         }
 
-        h1 { margin: 0; font-size: 1.3rem; color: var(--primary); }
-        .subtitle { font-size: 0.9rem; color: var(--text-secondary); margin-top: 4px; }
-
-        /* Search */
-        .search-wrapper {
-            padding: 15px;
-            max-width: 800px;
-            margin: 0 auto;
-            position: sticky;
-            top: 70px; /* Sotto l'header */
-            z-index: 90;
-            background: var(--bg-color);
-        }
-
-        #searchInput {
-            width: 100%;
-            padding: 12px 15px;
-            border-radius: 25px;
-            border: 1px solid #ddd;
-            font-size: 16px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            outline: none;
-            transition: all 0.3s;
-        }
-        #searchInput:focus { border-color: var(--primary); box-shadow: 0 2px 8px rgba(183, 28, 28, 0.2); }
-
-        /* List */
-        .container { max-width: 800px; margin: 0 auto; padding: 0 15px; }
-        .track-list { list-style: none; padding: 0; margin: 0; }
-
-        .track-card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 12px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            cursor: pointer;
-            transition: transform 0.2s, background-color 0.2s;
-            border-left: 4px solid transparent;
-        }
-
-        .track-card:hover { transform: translateY(-2px); }
+        .header-top { display: flex; justify-content: space-between; align-items: center; }
+        h1 { margin: 0; font-size: 1.2rem; color: var(--primary); }
         
-        /* Stato Attivo */
-        .track-card.active {
-            border-left-color: var(--primary);
-            background-color: #fff3e0;
+        .btn-tool {
+            background: #eee; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-size: 0.9rem;
         }
-        .track-card.active .track-title { color: #d84315; }
+        .btn-tool:hover { background: #ddd; }
 
-        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
-        .track-title { font-weight: 700; font-size: 1.1rem; margin: 0; line-height: 1.3; }
-        .track-time { 
-            background: #eee; color: #444; 
-            padding: 4px 8px; border-radius: 6px; 
-            font-size: 0.8rem; font-weight: 600; white-space: nowrap; margin-left: 10px;
+        /* SELEZIONE GUIDA */
+        .controls-area { display: flex; gap: 10px; flex-wrap: wrap; }
+        
+        select.guide-selector {
+            flex-grow: 1; padding: 10px; border: 1px solid var(--border); border-radius: 5px; font-size: 1rem;
         }
 
-        .track-author { font-size: 0.9rem; color: var(--primary); font-style: italic; margin-bottom: 8px; }
-        .track-desc { font-size: 0.95rem; color: var(--text-secondary); line-height: 1.5; }
+        .file-btn-wrapper { position: relative; overflow: hidden; display: inline-block; }
+        .file-btn {
+            border: 1px solid var(--primary); color: var(--primary); background: white; 
+            padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;
+        }
+        .file-btn-wrapper input[type=file] {
+            font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer;
+        }
 
-        /* Player Fisso */
+        /* RICERCA */
+        .search-container { padding: 10px 15px; background: var(--bg-color); position: sticky; top: 125px; z-index: 90; }
+        #searchInput { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 25px; outline: none; }
+        #searchInput:focus { border-color: var(--primary); box-shadow: 0 0 5px rgba(183,28,28,0.2); }
+
+        /* LISTA TRACCE */
+        .container { max-width: 800px; margin: 0 auto; padding: 0 15px; }
+        .track-list { list-style: none; padding: 0; }
+        
+        .track-card {
+            background: var(--card-bg); border-radius: 10px; padding: 15px; margin-bottom: 10px;
+            box-shadow: 0 2px 3px rgba(0,0,0,0.05); cursor: pointer; border-left: 5px solid transparent;
+            transition: transform 0.2s;
+        }
+        .track-card:hover { transform: translateY(-2px); }
+        .track-card.active { border-left-color: var(--primary); background-color: #fff3e0; }
+
+        .card-head { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 5px; }
+        .t-time { background: #eee; padding: 2px 8px; border-radius: 5px; font-size: 0.85rem; height: fit-content;}
+        .t-title { color: var(--primary); font-size: 1.05rem; }
+        .t-auth { font-style: italic; font-size: 0.9rem; color: var(--text-sec); margin-bottom: 5px; }
+        .t-desc { font-size: 0.95rem; line-height: 1.4; color: #444; }
+
+        /* PLAYER FISSO */
         .player-bar {
-            position: fixed;
-            bottom: 0; left: 0; right: 0;
-            background: white;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-            padding: 15px;
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            position: fixed; bottom: 0; left: 0; right: 0; background: white;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1); padding: 15px; z-index: 1000; text-align: center;
         }
+        .now-playing { font-weight: bold; color: var(--primary); margin-bottom: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        audio { width: 100%; max-width: 800px; }
 
-        .now-playing {
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: var(--primary);
-            margin-bottom: 10px;
-            text-align: center;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 100%;
-            padding: 0 20px;
+        /* MODALE CREATOR */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center;
         }
+        .modal-box {
+            background: white; width: 90%; max-width: 600px; padding: 20px; border-radius: 10px;
+            max-height: 90vh; overflow-y: auto;
+        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .close-modal { background: none; border: none; font-size: 1.5rem; cursor: pointer; }
+        
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-weight: bold; margin-bottom: 5px; }
+        .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        .form-group textarea { height: 150px; font-family: monospace; font-size: 0.9rem; }
+        
+        .btn-action {
+            background: var(--primary); color: white; border: none; padding: 10px 20px; 
+            border-radius: 5px; cursor: pointer; font-size: 1rem; width: 100%; margin-top: 10px;
+        }
+        .btn-secondary { background: #555; margin-top: 5px; }
 
-        audio { width: 100%; max-width: 800px; height: 40px; }
+        /* Feedback */
+        .empty-state { text-align: center; padding: 40px; color: #999; }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>Galleria dell'Accademia</h1>
-    <div class="subtitle">Firenze - Audioguida</div>
+    <div class="header-top">
+        <h1 id="appTitle">Audioguide Player</h1>
+        <button class="btn-tool" onclick="openModal()">⚙️ Crea / Converti</button>
+    </div>
+    
+    <div class="controls-area">
+        <select id="guideSelector" class="guide-selector">
+            <option value="" disabled selected>-- Seleziona una guida --</option>
+            </select>
+
+        <div class="file-btn-wrapper">
+            <button class="file-btn">📂 Apri JSON</button>
+            <input type="file" id="jsonInput" accept=".json">
+        </div>
+    </div>
 </header>
 
-<div class="search-wrapper">
-    <input type="text" id="searchInput" placeholder="Cerca opera o autore...">
+<div class="search-container">
+    <input type="text" id="searchInput" placeholder="Cerca opera, autore...">
 </div>
 
 <div class="container">
-    <ul class="track-list" id="trackList">
-        </ul>
+    <ul id="trackList" class="track-list">
+        <div class="empty-state">
+            Seleziona una guida dal menu o carica un file JSON.<br><br>
+            Usa il tasto ⚙️ per convertire un file TXT in JSON.
+        </div>
+    </ul>
 </div>
 
 <div class="player-bar">
-    <div class="now-playing" id="currentTrackLabel">Seleziona un'opera per iniziare</div>
+    <div class="now-playing" id="trackLabel">Nessuna traccia selezionata</div>
     <audio id="audioPlayer" controls controlsList="nodownload">
-        <source src="Galleria_dell'Accademia_di_Firenze.mp3" type="audio/mpeg">
         Il tuo browser non supporta l'audio.
     </audio>
 </div>
 
+<div class="modal-overlay" id="creatorModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3>Convertitore TXT → JSON</h3>
+            <button class="close-modal" onclick="closeModal()">×</button>
+        </div>
+
+        <div class="form-group">
+            <label>1. Titolo della Guida (Apparirà nell'App)</label>
+            <input type="text" id="newGuideTitle" placeholder="Es: Galleria dell'Accademia">
+        </div>
+
+        <div class="form-group">
+            <label>2. Nome File MP3 (Esatto, con estensione)</label>
+            <input type="text" id="newMp3Name" placeholder="Es: audio_firenze.mp3">
+            <small style="color:#666">Il file audio dovrà trovarsi nella stessa cartella del JSON.</small>
+        </div>
+
+        <div class="form-group">
+            <label>3. Incolla il testo (Formato con 00:00)</label>
+            <textarea id="txtContent" placeholder="00:00 Introduzione..."></textarea>
+            <div style="margin-top:5px; text-align:right;">
+                <input type="file" id="txtFileInput" accept=".txt" style="display:none">
+                <button type="button" onclick="document.getElementById('txtFileInput').click()" style="font-size:0.8rem; padding:4px 8px;">O carica file .txt</button>
+            </div>
+        </div>
+
+        <button class="btn-action" onclick="generateAndDownload()">💾 Scarica JSON</button>
+        <div id="convertStatus" style="margin-top:10px; text-align:center; font-size:0.9rem;"></div>
+    </div>
+</div>
+
 <script>
-    /* * DATABASE JSON INTEGRATO 
-     * Ho estratto i dati dal file .txt fornito.
-     * I secondi sono pre-calcolati per evitare errori di calcolo.
-     */
-    const tracksDB = [
-        {
-            "id": 1,
-            "time": "00:00",
-            "seconds": 0,
-            "title": "Introduzione Galleria dell'Accademia",
-            "author": "",
-            "desc": "Benvenuti alla Galleria. Un percorso che inizia dalla Sala del Colosso fino alla Tribuna del David."
-        },
-        {
-            "id": 2,
-            "time": "00:40",
-            "seconds": 40,
-            "title": "Ratto delle Sabine",
-            "author": "Giambologna",
-            "desc": "Imponente modello in terra cruda al centro della Sala del Colosso. Notate la 'forma serpentinata' e la spirale dei tre corpi."
-        },
-        {
-            "id": 3,
-            "time": "01:11",
-            "seconds": 71,
-            "title": "Madonna col Bambino (Madonna del Mare)",
-            "author": "Sandro Botticelli",
-            "desc": "Opera giovanile di Botticelli. Il nome deriva dal paesaggio marino sullo sfondo. La melagrana è simbolo della Passione."
-        },
-        {
-            "id": 4,
-            "time": "01:44",
-            "seconds": 104,
-            "title": "Cassone Adimari",
-            "author": "Lo Scheggia (Giovanni di Ser Giovanni)",
-            "desc": "Pannello frontale di un cassone nuziale. Raffigura un corteo nuziale con il Battistero sullo sfondo e abiti sfarzosi del '400."
-        },
-        {
-            "id": 5,
-            "time": "02:18",
-            "seconds": 138,
-            "title": "Tebaide",
-            "author": "Paolo Uccello",
-            "desc": "Racconta la vita dei santi eremiti. Tante piccole storie, struttura geometrica e colori vivaci tipici del maestro della prospettiva."
-        },
-        {
-            "id": 6,
-            "time": "02:49",
-            "seconds": 169,
-            "title": "Santi Stefano, Giacomo e Pietro",
-            "author": "Domenico Ghirlandaio",
-            "desc": "Figure monumentali e realistiche. San Stefano porta la pietra del martirio sulla testa. Opera della bottega del maestro di Michelangelo."
-        },
-        {
-            "id": 7,
-            "time": "03:21",
-            "seconds": 201,
-            "title": "Schiavo giovane",
-            "author": "Michelangelo Buonarroti",
-            "desc": "Primo prigione a sinistra. Le ginocchia piegate, il volto coperto. Esempio di come l'artista facesse emergere la figura dalla parte frontale."
-        },
-        {
-            "id": 8,
-            "time": "03:59",
-            "seconds": 239,
-            "title": "Schiavo barbuto",
-            "author": "Michelangelo Buonarroti",
-            "desc": "Sulla destra. Forse il più finito dei quattro. Si vede la tensione muscolare del torso che cerca di liberarsi dalla pietra."
-        },
-        {
-            "id": 9,
-            "time": "04:28",
-            "seconds": 268,
-            "title": "Schiavo Atlante",
-            "author": "Michelangelo Buonarroti",
-            "desc": "La testa è imprigionata in un masso quadrato che sembra pesare sulle spalle. Esempio potente del 'Non Finito'."
-        },
-        {
-            "id": 10,
-            "time": "04:58",
-            "seconds": 298,
-            "title": "Schiavo che si desta",
-            "author": "Michelangelo Buonarroti",
-            "desc": "Ultimo a destra. Il corpo si inarca in una torsione potente. Destinate alla tomba di Giulio II a Roma."
-        },
-        {
-            "id": 11,
-            "time": "05:28",
-            "seconds": 328,
-            "title": "San Matteo",
-            "author": "Michelangelo Buonarroti",
-            "desc": "Commissionata per il Duomo. Posa in rotazione, con il libro in mano. Visibili i segni della gradina (scalpello dentato)."
-        },
-        {
-            "id": 12,
-            "time": "06:01",
-            "seconds": 361,
-            "title": "Pietà di Palestrina",
-            "author": "Attr. Michelangelo Buonarroti",
-            "desc": "Gruppo scultoreo imponente sulla destra della tribuna. Cristo sorretto dalla Vergine e dalla Maddalena. Grande pathos nel corpo che scivola."
-        },
-        {
-            "id": 13,
-            "time": "06:31",
-            "seconds": 391,
-            "title": "David",
-            "author": "Michelangelo Buonarroti",
-            "desc": "Il capolavoro assoluto (1501-1504). Ritratto nell'attimo prima dello scontro. Incarnazione della virtù civica fiorentina."
-        },
-        {
-            "id": 14,
-            "time": "07:09",
-            "seconds": 429,
-            "title": "Busto di Michelangelo",
-            "author": "Daniele da Volterra",
-            "desc": "Bronzo che ritrae l'artista in età avanzata. Notate il naso rotto e l'espressione malinconica."
-        },
-        {
-            "id": 15,
-            "time": "07:37",
-            "seconds": 457,
-            "title": "L'Ammostatore",
-            "author": "Lorenzo Bartolini",
-            "desc": "Gipsoteca. Fanciullo che pigia l'uva. Bartolini rivoluzionò la scultura introducendo il 'bello naturale' e usando modelli dal popolo."
-        },
-        {
-            "id": 16,
-            "time": "08:13",
-            "seconds": 493,
-            "title": "Fiducia in Dio",
-            "author": "Lorenzo Bartolini",
-            "desc": "Figura femminile nuda in preghiera. Rappresenta l'idea astratta della fede attraverso la bellezza naturale."
-        },
-        {
-            "id": 17,
-            "time": "08:42",
-            "seconds": 522,
-            "title": "Albero della vita",
-            "author": "Pacino di Buonaguida",
-            "desc": "Risale al 1300. Crocifissione come albero con dodici rami. Un'enciclopedia teologica dipinta da 'leggere'."
-        },
-        {
-            "id": 18,
-            "time": "09:15",
-            "seconds": 555,
-            "title": "Incoronazione della Vergine",
-            "author": "Jacopo di Cione",
-            "desc": "Grande pala d'altare a fondo oro. Ricchezza dei tessuti punzonati e solennità della scena divina."
-        },
-        {
-            "id": 19,
-            "time": "09:44",
-            "seconds": 584,
-            "title": "Viola Medicea",
-            "author": "Antonio Stradivari",
-            "desc": "Costruita nel 1690 per il Principe Ferdinando de' Medici. Intarsi in madreperla e stemma mediceo. Unica conservata perfettamente."
-        },
-        {
-            "id": 20,
-            "time": "10:16",
-            "seconds": 616,
-            "title": "Violoncello Mediceo",
-            "author": "Antonio Stradivari",
-            "desc": "Faceva parte del Quintetto Mediceo. Vernice rossa splendida e qualità del suono inarrivabile."
-        },
-        {
-            "id": 21,
-            "time": "10:42",
-            "seconds": 642,
-            "title": "Spinetta Ovale",
-            "author": "Bartolomeo Cristofori",
-            "desc": "Rarissimo strumento dalla forma allungata. Testimonianza della sperimentazione tecnica alla corte dei Medici."
-        },
-        {
-            "id": 22,
-            "time": "11:11",
-            "seconds": 671,
-            "title": "Pianoforte di Cristofori",
-            "author": "Bartolomeo Cristofori",
-            "desc": "Uno dei primi pianoforti mai costruiti. Meccanismo che permetteva di suonare 'piano' e 'forte'. Antenato dei moderni pianoforti."
-        }
+    /* =========================================
+       CONFIGURAZIONE MANIFEST (Opzionale)
+       Se usi GitHub, elenca qui i file JSON disponibili
+       ========================================= */
+    const AVAILABLE_GUIDES = [
+        // { name: "Galleria Accademia", file: "accademia.json" },
+        // { name: "Uffizi", file: "uffizi.json" }
     ];
 
-    /* LOGICA APPLICAZIONE */
+    /* =========================================
+       LOGICA PLAYER
+       ========================================= */
+    let currentTracks = [];
     const player = document.getElementById('audioPlayer');
-    const list = document.getElementById('trackList');
-    const label = document.getElementById('currentTrackLabel');
-    const searchInput = document.getElementById('searchInput');
+    const trackLabel = document.getElementById('trackLabel');
+    const listEl = document.getElementById('trackList');
+    const appTitle = document.getElementById('appTitle');
 
-    // Funzione per generare l'HTML della lista
-    function renderList(items) {
-        list.innerHTML = '';
-        if (items.length === 0) {
-            list.innerHTML = '<div style="padding:20px; text-align:center; color:#666;">Nessun risultato trovato</div>';
+    // 1. Inizializzazione Dropdown
+    const selector = document.getElementById('guideSelector');
+    if (AVAILABLE_GUIDES.length > 0) {
+        AVAILABLE_GUIDES.forEach(g => {
+            const opt = document.createElement('option');
+            opt.value = g.file;
+            opt.textContent = g.name;
+            selector.appendChild(opt);
+        });
+    } else {
+        const opt = document.createElement('option');
+        opt.textContent = "Nessuna guida pre-configurata (Usa 'Apri JSON')";
+        selector.appendChild(opt);
+    }
+
+    // 2. Evento cambio Dropdown (Fetch da server/github)
+    selector.addEventListener('change', (e) => {
+        const file = e.target.value;
+        if(!file) return;
+        
+        fetch(file)
+            .then(res => res.json())
+            .then(data => loadGuide(data))
+            .catch(err => alert("Errore caricamento: " + err));
+    });
+
+    // 3. Evento caricamento manuale JSON (Locale)
+    document.getElementById('jsonInput').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            try {
+                const data = JSON.parse(ev.target.result);
+                loadGuide(data);
+                // Resetta select
+                selector.value = "";
+            } catch (err) {
+                alert("File JSON non valido.");
+            }
+        };
+        reader.readAsText(file);
+    });
+
+    // 4. Caricamento Dati nel Player
+    function loadGuide(data) {
+        // Imposta Titolo e Audio
+        appTitle.textContent = data.title || "Audioguida";
+        player.src = data.mp3File; // Cambia la sorgente audio
+        currentTracks = data.tracks;
+        
+        renderList(currentTracks);
+        player.load(); // Ricarica player con nuovo audio
+        trackLabel.textContent = "Premi Play per iniziare";
+    }
+
+    // 5. Rendering Lista
+    function renderList(tracks) {
+        listEl.innerHTML = '';
+        if (!tracks || tracks.length === 0) {
+            listEl.innerHTML = '<div class="empty-state">Nessuna traccia trovata nel file.</div>';
             return;
         }
 
-        items.forEach(track => {
+        tracks.forEach(t => {
             const li = document.createElement('li');
             li.className = 'track-card';
-            li.setAttribute('data-sec', track.seconds);
-            li.onclick = () => playTrack(track);
-
+            li.dataset.sec = t.seconds;
+            li.onclick = () => playTrack(t);
             li.innerHTML = `
-                <div class="card-header">
-                    <div class="track-title">${track.title}</div>
-                    <div class="track-time">${track.time}</div>
+                <div class="card-head">
+                    <span class="t-title">${t.title}</span>
+                    <span class="t-time">${t.time}</span>
                 </div>
-                ${track.author ? `<div class="track-author">${track.author}</div>` : ''}
-                <div class="track-desc">${track.desc}</div>
+                ${t.author ? `<div class="t-auth">${t.author}</div>` : ''}
+                <div class="t-desc">${t.desc}</div>
             `;
-            list.appendChild(li);
+            listEl.appendChild(li);
         });
     }
 
-    // Funzione Play
     function playTrack(track) {
         player.currentTime = track.seconds;
-        player.play();
-        updateUI(track);
-        
-        // Scroll verso la card attiva
-        setTimeout(() => {
-            const activeCard = document.querySelector(`.track-card[data-sec="${track.seconds}"]`);
-            if(activeCard) activeCard.scrollIntoView({behavior: "smooth", block: "center"});
-        }, 100);
+        player.play().catch(e => console.log(e));
+        updateActiveUI(track);
     }
 
-    // Aggiorna interfaccia (evidenzia card)
-    function updateUI(track) {
-        label.textContent = `${track.time} - ${track.title}`;
-        
-        // Rimuovi active da tutti
+    function updateActiveUI(track) {
+        trackLabel.textContent = `${track.time} - ${track.title}`;
         document.querySelectorAll('.track-card').forEach(c => c.classList.remove('active'));
-        
-        // Aggiungi active al corrente
-        const activeCard = document.querySelector(`.track-card[data-sec="${track.seconds}"]`);
-        if(activeCard) activeCard.classList.add('active');
+        const active = document.querySelector(`.track-card[data-sec="${track.seconds}"]`);
+        if(active) {
+            active.classList.add('active');
+            active.scrollIntoView({behavior: "smooth", block: "center"});
+        }
     }
 
-    // Sincronizzazione automatica mentre l'audio va
     player.addEventListener('timeupdate', () => {
-        const currentSec = player.currentTime;
-        // Trova l'ultimo capitolo iniziato
-        // Usiamo [...tracksDB] per creare una copia e non invertire l'originale
-        const currentTrack = [...tracksDB].reverse().find(t => t.seconds <= currentSec + 1);
-
-        if (currentTrack) {
-            const activeCard = document.querySelector('.track-card.active');
-            // Aggiorna solo se l'ID è diverso per evitare sfarfallii
-            if (!activeCard || activeCard.getAttribute('data-sec') != currentTrack.seconds) {
-                updateUI(currentTrack);
-            }
+        const cur = player.currentTime;
+        const track = [...currentTracks].reverse().find(t => t.seconds <= cur + 1);
+        if(track) {
+            const active = document.querySelector('.track-card.active');
+            if (!active || active.dataset.sec != track.seconds) updateActiveUI(track);
         }
     });
 
     // Ricerca
-    searchInput.addEventListener('input', (e) => {
-        const query = e.target.value.toLowerCase();
-        const filtered = tracksDB.filter(t => 
-            t.title.toLowerCase().includes(query) || 
-            t.author.toLowerCase().includes(query) ||
-            t.desc.toLowerCase().includes(query)
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+        const q = e.target.value.toLowerCase();
+        if(!currentTracks.length) return;
+        
+        const filtered = currentTracks.filter(t => 
+            t.title.toLowerCase().includes(q) || 
+            (t.author && t.author.toLowerCase().includes(q)) ||
+            t.desc.toLowerCase().includes(q)
         );
         renderList(filtered);
     });
 
-    // Avvio iniziale
-    renderList(tracksDB);
+    /* =========================================
+       LOGICA CREATOR / CONVERTER
+       ========================================= */
+    function openModal() { document.getElementById('creatorModal').style.display = 'flex'; }
+    function closeModal() { document.getElementById('creatorModal').style.display = 'none'; }
 
+    // Carica TXT nella textarea
+    document.getElementById('txtFileInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => document.getElementById('txtContent').value = ev.target.result;
+        reader.readAsText(file);
+    });
+
+    function generateAndDownload() {
+        const rawText = document.getElementById('txtContent').value;
+        const title = document.getElementById('newGuideTitle').value || "Nuova Audioguida";
+        const mp3Name = document.getElementById('newMp3Name').value || "audio.mp3";
+        const status = document.getElementById('convertStatus');
+
+        if(!rawText.trim()) { alert("Inserisci il testo da convertire!"); return; }
+
+        // Parsing
+        const tracks = parseTxtToTracks(rawText);
+        
+        if(tracks.length === 0) {
+            status.innerHTML = "<span style='color:red'>Errore: Nessuna traccia trovata. Verifica il formato.</span>";
+            return;
+        }
+
+        // Struttura JSON Finale
+        const guideData = {
+            title: title,
+            mp3File: mp3Name,
+            generatedAt: new Date().toISOString(),
+            tracks: tracks
+        };
+
+        // Creazione File Download
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(guideData, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", title.replace(/[^a-z0-9]/gi, '_').toLowerCase() + ".json");
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+
+        status.innerHTML = `<span style='color:green'>✅ File JSON creato con ${tracks.length} tracce!</span>`;
+    }
+
+    // Engine di Parsing (Lo stesso usato precedentemente)
+    function parseTxtToTracks(text) {
+        const cleanText = text.replace(/\/g, "");
+        const chunkRegex = /(\d{2}:\d{2})([\s\S]*?)(?=(\d{2}:\d{2})|$)/g;
+        let match;
+        const tracks = [];
+        let idCounter = 1;
+
+        while ((match = chunkRegex.exec(cleanText)) !== null) {
+            const timeStr = match[1];
+            const content = match[2].trim();
+            let title = "Capitolo " + idCounter;
+            let author = "";
+            let desc = content;
+
+            const meta = content.match(/Titolo Opera:\s*(.*?)\s*Autore dell'Opera:\s*(.*?)\s([\s\S]*)/i);
+            if (meta) {
+                title = meta[1].trim();
+                author = meta[2].trim();
+                desc = meta[3].replace(/Fine Descrizione.*/i, "").trim();
+            } else if (content.toLowerCase().includes("introduzione")) {
+                title = "Introduzione";
+                desc = content.replace(/Fine Introduzione.*/i, "").trim();
+            }
+
+            if(desc.length > 5) {
+                tracks.push({
+                    id: idCounter++,
+                    time: timeStr,
+                    seconds: parseInt(timeStr.split(':')[0])*60 + parseInt(timeStr.split(':')[1]),
+                    title: title,
+                    author: author,
+                    desc: desc
+                });
+            }
+        }
+        return tracks;
+    }
 </script>
 
 </body>
