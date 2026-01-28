@@ -179,165 +179,31 @@
 
 <script>
     /* =========================================
-       CONFIGURAZIONE MANIFEST (Opzionale)
-       Se usi GitHub, elenca qui i file JSON disponibili
+       1. DEFINIZIONE FUNZIONI GLOBALI (Caricate subito)
        ========================================= */
-    const AVAILABLE_GUIDES = [
-        // { name: "Galleria Accademia", file: "accademia.json" },
-        // { name: "Uffizi", file: "uffizi.json" }
-    ];
-
-    /* =========================================
-       LOGICA PLAYER
-       ========================================= */
-    let currentTracks = [];
-    const player = document.getElementById('audioPlayer');
-    const trackLabel = document.getElementById('trackLabel');
-    const listEl = document.getElementById('trackList');
-    const appTitle = document.getElementById('appTitle');
-
-    // 1. Inizializzazione Dropdown
-    const selector = document.getElementById('guideSelector');
-    if (AVAILABLE_GUIDES.length > 0) {
-        AVAILABLE_GUIDES.forEach(g => {
-            const opt = document.createElement('option');
-            opt.value = g.file;
-            opt.textContent = g.name;
-            selector.appendChild(opt);
-        });
-    } else {
-        const opt = document.createElement('option');
-        opt.textContent = "Nessuna guida pre-configurata (Usa 'Apri JSON')";
-        selector.appendChild(opt);
+    
+    // Funzioni per la Modale
+    function openModal() { 
+        const modal = document.getElementById('creatorModal');
+        if(modal) modal.style.display = 'flex';
     }
 
-    // 2. Evento cambio Dropdown (Fetch da server/github)
-    selector.addEventListener('change', (e) => {
-        const file = e.target.value;
-        if(!file) return;
-        
-        fetch(file)
-            .then(res => res.json())
-            .then(data => loadGuide(data))
-            .catch(err => alert("Errore caricamento: " + err));
-    });
-
-    // 3. Evento caricamento manuale JSON (Locale)
-    document.getElementById('jsonInput').addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            try {
-                const data = JSON.parse(ev.target.result);
-                loadGuide(data);
-                // Resetta select
-                selector.value = "";
-            } catch (err) {
-                alert("File JSON non valido.");
-            }
-        };
-        reader.readAsText(file);
-    });
-
-    // 4. Caricamento Dati nel Player
-    function loadGuide(data) {
-        // Imposta Titolo e Audio
-        appTitle.textContent = data.title || "Audioguida";
-        player.src = data.mp3File; // Cambia la sorgente audio
-        currentTracks = data.tracks;
-        
-        renderList(currentTracks);
-        player.load(); // Ricarica player con nuovo audio
-        trackLabel.textContent = "Premi Play per iniziare";
+    function closeModal() { 
+        const modal = document.getElementById('creatorModal');
+        if(modal) modal.style.display = 'none';
     }
 
-    // 5. Rendering Lista
-    function renderList(tracks) {
-        listEl.innerHTML = '';
-        if (!tracks || tracks.length === 0) {
-            listEl.innerHTML = '<div class="empty-state">Nessuna traccia trovata nel file.</div>';
-            return;
-        }
-
-        tracks.forEach(t => {
-            const li = document.createElement('li');
-            li.className = 'track-card';
-            li.dataset.sec = t.seconds;
-            li.onclick = () => playTrack(t);
-            li.innerHTML = `
-                <div class="card-head">
-                    <span class="t-title">${t.title}</span>
-                    <span class="t-time">${t.time}</span>
-                </div>
-                ${t.author ? `<div class="t-auth">${t.author}</div>` : ''}
-                <div class="t-desc">${t.desc}</div>
-            `;
-            listEl.appendChild(li);
-        });
-    }
-
-    function playTrack(track) {
-        player.currentTime = track.seconds;
-        player.play().catch(e => console.log(e));
-        updateActiveUI(track);
-    }
-
-    function updateActiveUI(track) {
-        trackLabel.textContent = `${track.time} - ${track.title}`;
-        document.querySelectorAll('.track-card').forEach(c => c.classList.remove('active'));
-        const active = document.querySelector(`.track-card[data-sec="${track.seconds}"]`);
-        if(active) {
-            active.classList.add('active');
-            active.scrollIntoView({behavior: "smooth", block: "center"});
-        }
-    }
-
-    player.addEventListener('timeupdate', () => {
-        const cur = player.currentTime;
-        const track = [...currentTracks].reverse().find(t => t.seconds <= cur + 1);
-        if(track) {
-            const active = document.querySelector('.track-card.active');
-            if (!active || active.dataset.sec != track.seconds) updateActiveUI(track);
-        }
-    });
-
-    // Ricerca
-    document.getElementById('searchInput').addEventListener('input', (e) => {
-        const q = e.target.value.toLowerCase();
-        if(!currentTracks.length) return;
-        
-        const filtered = currentTracks.filter(t => 
-            t.title.toLowerCase().includes(q) || 
-            (t.author && t.author.toLowerCase().includes(q)) ||
-            t.desc.toLowerCase().includes(q)
-        );
-        renderList(filtered);
-    });
-
-    /* =========================================
-       LOGICA CREATOR / CONVERTER
-       ========================================= */
-    function openModal() { document.getElementById('creatorModal').style.display = 'flex'; }
-    function closeModal() { document.getElementById('creatorModal').style.display = 'none'; }
-
-    // Carica TXT nella textarea
-    document.getElementById('txtFileInput').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (ev) => document.getElementById('txtContent').value = ev.target.result;
-        reader.readAsText(file);
-    });
-
+    // Funzione Generazione JSON
     function generateAndDownload() {
         const rawText = document.getElementById('txtContent').value;
         const title = document.getElementById('newGuideTitle').value || "Nuova Audioguida";
         const mp3Name = document.getElementById('newMp3Name').value || "audio.mp3";
         const status = document.getElementById('convertStatus');
 
-        if(!rawText.trim()) { alert("Inserisci il testo da convertire!"); return; }
+        if(!rawText.trim()) { 
+            alert("Inserisci il testo da convertire!"); 
+            return; 
+        }
 
         // Parsing
         const tracks = parseTxtToTracks(rawText);
@@ -367,7 +233,7 @@
         status.innerHTML = `<span style='color:green'>✅ File JSON creato con ${tracks.length} tracce!</span>`;
     }
 
-    // Engine di Parsing (Lo stesso usato precedentemente)
+    // Engine di Parsing TXT -> Object
     function parseTxtToTracks(text) {
         const cleanText = text.replace(/\/g, "");
         const chunkRegex = /(\d{2}:\d{2})([\s\S]*?)(?=(\d{2}:\d{2})|$)/g;
@@ -382,7 +248,9 @@
             let author = "";
             let desc = content;
 
+            // Regex migliorata per catturare Titolo e Autore
             const meta = content.match(/Titolo Opera:\s*(.*?)\s*Autore dell'Opera:\s*(.*?)\s([\s\S]*)/i);
+            
             if (meta) {
                 title = meta[1].trim();
                 author = meta[2].trim();
@@ -392,11 +260,14 @@
                 desc = content.replace(/Fine Introduzione.*/i, "").trim();
             }
 
-            if(desc.length > 5) {
+            // Rimuove spazi vuoti e code indesiderate
+            desc = desc.replace(/Fine Descrizione.*/i, "").trim();
+
+            if(desc.length > 2) {
                 tracks.push({
                     id: idCounter++,
                     time: timeStr,
-                    seconds: parseInt(timeStr.split(':')[0])*60 + parseInt(timeStr.split(':')[1]),
+                    seconds: timeToSeconds(timeStr),
                     title: title,
                     author: author,
                     desc: desc
@@ -405,6 +276,175 @@
         }
         return tracks;
     }
+
+    function timeToSeconds(str) {
+        const p = str.split(':');
+        return parseInt(p[0])*60 + parseInt(p[1]);
+    }
+
+    /* =========================================
+       2. LOGICA APPLICAZIONE (Eseguita dopo caricamento HTML)
+       ========================================= */
+    document.addEventListener('DOMContentLoaded', () => {
+        
+        // Configurazione Guide (Per GitHub Pages)
+        const AVAILABLE_GUIDES = [
+            // Esempio: { name: "Galleria Accademia", file: "accademia.json" }
+        ];
+
+        // Elementi DOM
+        const selector = document.getElementById('guideSelector');
+        const jsonInput = document.getElementById('jsonInput');
+        const player = document.getElementById('audioPlayer');
+        const trackLabel = document.getElementById('trackLabel');
+        const listEl = document.getElementById('trackList');
+        const appTitle = document.getElementById('appTitle');
+        const searchInput = document.getElementById('searchInput');
+        const txtFileInput = document.getElementById('txtFileInput');
+
+        let currentTracks = [];
+
+        // 1. Popola Dropdown
+        if (AVAILABLE_GUIDES.length > 0) {
+            AVAILABLE_GUIDES.forEach(g => {
+                const opt = document.createElement('option');
+                opt.value = g.file;
+                opt.textContent = g.name;
+                selector.appendChild(opt);
+            });
+        } else {
+            const opt = document.createElement('option');
+            opt.textContent = "Nessuna guida pre-configurata";
+            selector.appendChild(opt);
+        }
+
+        // 2. Evento Selezione Guida (Dropdown)
+        selector.addEventListener('change', (e) => {
+            const file = e.target.value;
+            if(!file || file.includes("Nessuna")) return;
+            
+            fetch(file)
+                .then(res => {
+                    if(!res.ok) throw new Error("File non trovato");
+                    return res.json();
+                })
+                .then(data => loadGuide(data))
+                .catch(err => alert("Errore caricamento: " + err.message));
+        });
+
+        // 3. Evento Caricamento Manuale JSON
+        if(jsonInput) {
+            jsonInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    try {
+                        const data = JSON.parse(ev.target.result);
+                        loadGuide(data);
+                        selector.value = ""; // Reset dropdown
+                    } catch (err) {
+                        alert("File JSON non valido o corrotto.");
+                    }
+                };
+                reader.readAsText(file);
+            });
+        }
+
+        // 4. Caricamento File TXT nella Modale
+        if(txtFileInput) {
+            txtFileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (ev) => document.getElementById('txtContent').value = ev.target.result;
+                reader.readAsText(file);
+            });
+        }
+
+        // 5. Funzione Load Guide
+        function loadGuide(data) {
+            appTitle.textContent = data.title || "Audioguida";
+            
+            // Gestione percorso file audio
+            // Se siamo in locale o github, l'audio si presume nella stessa cartella
+            player.src = data.mp3File; 
+            
+            currentTracks = data.tracks || [];
+            renderList(currentTracks);
+            
+            player.load();
+            trackLabel.textContent = "Guida caricata. Premi Play.";
+        }
+
+        // 6. Rendering Lista
+        function renderList(tracks) {
+            listEl.innerHTML = '';
+            if (!tracks || tracks.length === 0) {
+                listEl.innerHTML = '<div class="empty-state">Nessuna traccia trovata.</div>';
+                return;
+            }
+
+            tracks.forEach(t => {
+                const li = document.createElement('li');
+                li.className = 'track-card';
+                li.dataset.sec = t.seconds;
+                li.onclick = () => playTrack(t);
+                li.innerHTML = `
+                    <div class="card-head">
+                        <span class="t-title">${t.title}</span>
+                        <span class="t-time">${t.time}</span>
+                    </div>
+                    ${t.author ? `<div class="t-auth">${t.author}</div>` : ''}
+                    <div class="t-desc">${t.desc}</div>
+                `;
+                listEl.appendChild(li);
+            });
+        }
+
+        // 7. Play Logic
+        function playTrack(track) {
+            player.currentTime = track.seconds;
+            player.play().catch(e => console.log("Autoplay bloccato o errore sorgente"));
+            updateActiveUI(track);
+        }
+
+        function updateActiveUI(track) {
+            trackLabel.textContent = `${track.time} - ${track.title}`;
+            document.querySelectorAll('.track-card').forEach(c => c.classList.remove('active'));
+            const active = document.querySelector(`.track-card[data-sec="${track.seconds}"]`);
+            if(active) {
+                active.classList.add('active');
+                active.scrollIntoView({behavior: "smooth", block: "center"});
+            }
+        }
+
+        // 8. Time Update Listener
+        player.addEventListener('timeupdate', () => {
+            const cur = player.currentTime;
+            const track = [...currentTracks].reverse().find(t => t.seconds <= cur + 1);
+            if(track) {
+                const active = document.querySelector('.track-card.active');
+                if (!active || active.dataset.sec != track.seconds) updateActiveUI(track);
+            }
+        });
+
+        // 9. Search Listener
+        if(searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                const q = e.target.value.toLowerCase();
+                if(!currentTracks.length) return;
+                
+                const filtered = currentTracks.filter(t => 
+                    t.title.toLowerCase().includes(q) || 
+                    (t.author && t.author.toLowerCase().includes(q)) ||
+                    t.desc.toLowerCase().includes(q)
+                );
+                renderList(filtered);
+            });
+        }
+    });
 </script>
 
 </body>
