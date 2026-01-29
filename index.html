@@ -2,326 +2,460 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Audioguide Player AI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Audioguide AI Player</title>
     <style>
         :root {
-            --primary: #b71c1c;
-            --bg-color: #f4f4f4;
-            --text-main: #212121;
-            --highlight: #ffebee;
+            --primary: #c62828; /* Rosso Museale */
+            --primary-light: #ffcdd2;
+            --surface: #ffffff;
+            --background: #f3f4f6;
+            --text-dark: #1e293b;
+            --text-light: #64748b;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --radius: 12px;
         }
-        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { margin: 0; background-color: var(--bg-color); color: var(--text-main); padding-bottom: 150px; }
 
-        /* HEADER */
-        header { background: white; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
-        .header-content { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 15px; }
-        .top-row { display: flex; justify-content: space-between; align-items: center; }
-        h1 { margin: 0; font-size: 1.3rem; color: var(--primary); }
-        .btn-tool { background: #eee; border: 1px solid #ccc; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; display:flex; align-items:center; gap:5px; }
-        .btn-tool:hover { background: #e0e0e0; }
-
-        /* CONTROLLI */
-        .controls-row { display: flex; gap: 10px; }
-        select#guideSelector { flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #ccc; }
-        .upload-wrapper { position: relative; overflow: hidden; }
-        .btn-upload { border: 1px solid var(--primary); background: white; color: var(--primary); padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        .upload-wrapper input[type=file] { font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; }
-
-        /* LISTA E PLAYER */
-        .container { max-width: 800px; margin: 0 auto; padding: 15px; }
-        .track-list { list-style: none; padding: 0; margin: 0; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
-        .track-card { 
-            background: white; border-radius: 8px; padding: 15px; margin-bottom: 10px; cursor: pointer; 
-            border-left: 4px solid transparent; box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
-            transition: background 0.2s;
+        body { 
+            margin: 0; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--background);
+            color: var(--text-dark);
+            padding-bottom: 140px; /* Spazio per il player */
         }
-        .track-card:hover { background: #fafafa; }
-        .track-card.active { border-left-color: var(--primary); background-color: var(--highlight); }
-        .track-card.playing { background-color: #fff8e1; border-left-color: #ffc107; }
 
-        .card-top { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 5px; font-size: 1.1rem;}
-        .card-meta { display: flex; gap: 10px; font-size: 0.85rem; color: #666; margin-bottom: 8px; }
-        .t-time { background: #eee; padding: 2px 6px; border-radius: 4px; }
-        
-        .track-desc { font-size: 0.95rem; line-height: 1.5; color: #444; }
-
-        /* PLAYER BAR */
-        .player-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); padding: 15px; text-align: center; z-index: 1000; }
-        .now-playing-label { font-size: 0.9rem; color: #666; margin-bottom: 4px; }
-        .now-playing-title { font-weight: bold; color: var(--primary); margin-bottom: 10px; font-size: 1.1rem; }
-        audio { width: 100%; max-width: 800px; }
-
-        /* MODALE PROMPT */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; }
-        .modal-box { background: white; width: 95%; max-width: 700px; padding: 25px; border-radius: 12px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
-        
-        .prompt-area { 
-            width: 100%; height: 200px; padding: 15px; 
-            border: 1px solid #ccc; border-radius: 8px; 
-            background: #f8f9fa; font-family: monospace; font-size: 0.9rem; line-height: 1.4; resize: vertical;
+        /* --- HEADER --- */
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 15px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            box-shadow: var(--shadow-sm);
         }
-        .copy-btn { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 1rem; }
-        .copy-btn:active { transform: translateY(1px); }
-        .info-box { background: #e3f2fd; color: #0d47a1; padding: 15px; border-radius: 6px; font-size: 0.9rem; border-left: 4px solid #2196f3; }
 
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        h1 { margin: 0; font-size: 1.25rem; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+        
+        .btn-icon {
+            background: var(--background);
+            border: none;
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem;
+            transition: transform 0.2s;
+        }
+        .btn-icon:active { transform: scale(0.95); }
+
+        .search-bar { position: relative; width: 100%; }
+        .search-bar input {
+            width: 100%;
+            padding: 12px 15px 12px 40px;
+            border: none;
+            background: #e2e8f0;
+            border-radius: var(--radius);
+            font-size: 1rem;
+            outline: none;
+        }
+        .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: 0.5; }
+
+        /* --- CONTROLLI FILE --- */
+        .file-controls {
+            padding: 10px 15px;
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .chip {
+            background: white;
+            border: 1px solid #cbd5e1;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            cursor: pointer;
+            display: flex; align-items: center; gap: 6px;
+            box-shadow: var(--shadow-sm);
+        }
+        .chip.active { background: var(--text-dark); color: white; border-color: var(--text-dark); }
+        .chip input[type=file] { display: none; }
+
+        /* --- LISTA TRACCE --- */
+        .container { max-width: 800px; margin: 0 auto; padding: 10px 15px; }
+        
+        .track-card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-left: 5px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .track-card:active { transform: scale(0.99); background: #f8fafc; }
+        
+        .track-card.active { 
+            border-left-color: var(--primary); 
+            background: #fffafa;
+            box-shadow: var(--shadow-md);
+        }
+
+        .track-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+        .track-title { font-weight: 700; font-size: 1.1rem; line-height: 1.3; }
+        .track-duration { 
+            font-size: 0.75rem; 
+            background: #eee; 
+            padding: 4px 8px; 
+            border-radius: 6px; 
+            font-weight: 600; 
+            color: #555;
+            white-space: nowrap;
+            margin-left: 10px;
+        }
+
+        .track-author { font-size: 0.9rem; color: var(--primary); font-weight: 500; margin-bottom: 8px; }
+        .track-desc { font-size: 0.95rem; color: var(--text-light); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .track-card.active .track-desc { -webkit-line-clamp: unset; color: var(--text-dark); }
+
+        /* --- PLAYER BAR --- */
+        .player-bar {
+            position: fixed;
+            bottom: 0; left: 0; width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+            padding: 15px 20px 25px 20px;
+            z-index: 500;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+        }
+        
+        .now-playing-info { text-align: center; margin-bottom: 12px; }
+        .np-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; font-weight: bold; }
+        .np-title { font-size: 1.1rem; font-weight: bold; color: var(--primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        audio { width: 100%; height: 40px; border-radius: 20px; outline: none; }
+        audio::-webkit-media-controls-panel { background-color: #f1f5f9; }
+
+        /* --- MODALE --- */
+        .modal-overlay {
+            display: none;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 2000;
+            align-items: center; justify-content: center;
+            padding: 20px;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .modal-box {
+            background: white;
+            width: 100%; max-width: 600px;
+            border-radius: 20px;
+            padding: 25px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            display: flex; flex-direction: column; gap: 15px;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .input-group label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 0.9rem; color: var(--text-dark); }
+        .input-group input, .input-group textarea {
+            width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px;
+            font-size: 1rem; font-family: inherit;
+        }
+        .input-group textarea { resize: vertical; min-height: 100px; }
+
+        .btn-primary {
+            background: var(--text-dark); color: white; border: none; padding: 15px;
+            border-radius: 10px; font-weight: bold; font-size: 1rem; cursor: pointer;
+            width: 100%; margin-top: 10px;
+        }
+        .btn-primary:active { transform: translateY(1px); }
+
+        .prompt-preview {
+            background: #1e293b; color: #a5b4fc; 
+            padding: 15px; border-radius: 8px; 
+            font-family: monospace; font-size: 0.85rem; 
+            white-space: pre-wrap; word-break: break-all;
+            max-height: 150px; overflow-y: auto;
+            display: none;
+        }
+        
     </style>
 </head>
 <body>
 
 <header>
-    <div class="header-content">
-        <div class="top-row">
-            <h1>🏛️ Audioguide AI</h1>
-            <button class="btn-tool" onclick="window.app.openPromptModal()">
-                <span>🤖 Genera Prompt AI</span>
-            </button>
-        </div>
-        <div class="controls-row">
-            <select id="guideSelector" onchange="window.app.loadGuide(this.value)">
-                <option value="demo">Firenze: Accademia (Demo)</option>
-                <option value="empty">-- Carica JSON Esterno --</option>
-            </select>
-            <div class="upload-wrapper">
-                <button class="btn-upload">📂 Apri JSON</button>
-                <input type="file" onchange="window.app.loadLocalJson(this)" accept=".json">
-            </div>
-        </div>
-        <input type="text" id="searchInput" placeholder="🔍 Cerca opera o autore..." style="width:100%; padding:12px; border:1px solid #ddd; border-radius:5px;" oninput="window.app.search(this.value)">
+    <div class="header-top">
+        <h1>🏛️ AudioGuide AI</h1>
+        <button class="btn-icon" onclick="window.app.openTool()" title="Crea Prompt">
+            ✨
+        </button>
+    </div>
+    
+    <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" placeholder="Cerca opera, autore..." oninput="window.app.search(this.value)">
     </div>
 </header>
 
+<div class="file-controls">
+    <div class="chip active" onclick="window.app.loadDemo()">
+        📱 Demo Firenze
+    </div>
+    <label class="chip">
+        📂 Carica JSON
+        <input type="file" accept=".json" onchange="window.app.loadLocalJson(this)">
+    </label>
+</div>
+
 <div class="container">
-    <ul id="trackList" class="track-list"></ul>
+    <div id="trackList"></div>
 </div>
 
 <div class="player-bar">
-    <div class="now-playing-label">In riproduzione:</div>
-    <div id="trackLabel" class="now-playing-title">Nessuna traccia selezionata</div>
+    <div class="now-playing-info">
+        <div class="np-label">In Riproduzione</div>
+        <div id="npTitle" class="np-title">Seleziona una traccia</div>
+    </div>
     <audio id="audioPlayer" controls controlsList="nodownload"></audio>
 </div>
 
-<div id="promptModal" class="modal-overlay">
+<div id="toolModal" class="modal-overlay">
     <div class="modal-box">
         <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h2 style="margin:0; color:var(--primary)">Generatore Prompt JSON</h2>
-            <button onclick="document.getElementById('promptModal').style.display='none'" style="border:none; background:none; font-size:2rem; cursor:pointer;">&times;</button>
+            <h2 style="margin:0; font-size:1.5rem; color:var(--primary)">Crea Nuova Guida</h2>
+            <button onclick="document.getElementById('toolModal').style.display='none'" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
         </div>
         
-        <div class="info-box">
-            <strong>Come creare una nuova guida:</strong><br>
-            1. Copia il prompt qui sotto.<br>
-            2. Incollalo nella chat della tua AI preferita (ChatGPT, Gemini, Claude).<br>
-            3. Allega il file audio o incolla la trascrizione e la lista dei tempi (come hai fatto con me).<br>
-            4. L'AI genererà il file JSON perfetto. Salvalo e caricalo qui con "Apri JSON".
+        <p style="color:var(--text-light); font-size:0.9rem; margin:0;">
+            Inserisci i dati qui sotto. L'app genererà un prompt perfetto da inviare all'Intelligenza Artificiale.
+        </p>
+
+        <div class="input-group">
+            <label>Titolo Guida</label>
+            <input type="text" id="pTitle" placeholder="es. Museo Egizio Torino">
+        </div>
+        <div class="input-group">
+            <label>Nome File Audio MP3</label>
+            <input type="text" id="pFilename" placeholder="es. audio_torino.mp3">
+        </div>
+        <div class="input-group">
+            <label>Trascrizione e Tempi (da Turboscribe/Whisper)</label>
+            <textarea id="pTranscript" placeholder="Incolla qui il testo con i timestamp (00:00)..."></textarea>
         </div>
 
-        <textarea id="aiPromptOutput" class="prompt-area" readonly></textarea>
+        <button class="btn-primary" onclick="window.app.generateAndCopy()">📋 Genera e Copia Prompt</button>
         
-        <button class="copy-btn" onclick="window.app.copyPrompt()">📋 Copia Prompt</button>
+        <div id="promptResult" class="prompt-preview"></div>
     </div>
 </div>
 
 <script>
-    // --- DATI DIMOSTRATIVI ---
-    const DEMO_GUIDE = {
-        title: "Galleria dell'Accademia di Firenze",
-        mp3File: "audio.mp3", // Assicurati che il file si chiami ESATTAMENTE così (minuscolo)
+    /* --- DATI DEMO --- */
+    const DEMO_DATA = {
+        title: "Galleria dell'Accademia",
+        mp3File: "audio.mp3",
         tracks: [
-            { id: 1, title: "Introduzione", author: "", start: "00:00", end: "00:49", desc: "Benvenuti alla Galleria dell'Accademia. Un percorso tra la Sala del Colosso, i Prigioni e la Tribuna." },
-            { id: 2, title: "Ratto delle Sabine", author: "Giambologna", start: "00:54", end: "01:24", desc: "Modello in terra cruda. Notate la 'forma serpentinata' che invita a girare attorno all'opera." },
-            { id: 3, title: "Madonna col Bambino (Madonna del Mare)", author: "Sandro Botticelli", start: "01:26", end: "01:53", desc: "Dipinto giovanile. La melagrana è simbolo della Passione. Il paesaggio marino sullo sfondo è un dettaglio raro." },
-            { id: 4, title: "Cassone Adimari", author: "Lo Scheggia", start: "01:55", end: "02:22", desc: "Pannello frontale di un cassone nuziale. Raffigura un corteo nuziale con il Battistero sullo sfondo." },
-            { id: 5, title: "Tebaide", author: "Paolo Uccello", start: "02:24", end: "02:48", desc: "Racconta la vita dei santi eremiti. Struttura geometrica e colori vivaci tipici dell'autore." },
-            { id: 6, title: "Santi Stefano, Giacomo e Pietro", author: "Domenico Ghirlandaio", start: "02:50", end: "03:15", desc: "Monumentalità delle figure e colori brillanti. San Stefano porta la pietra del martirio sulla testa." },
-            { id: 7, title: "Schiavo Giovane", author: "Michelangelo Buonarroti", start: "03:21", end: "03:45", desc: "Le ginocchia piegate, il volto coperto. La figura emerge dalla parte frontale del blocco." },
-            { id: 8, title: "Schiavo Barbuto", author: "Michelangelo Buonarroti", start: "03:47", end: "04:13", desc: "Tensione muscolare del torso. La lotta tra forma e materia è tangibile." },
-            { id: 9, title: "Schiavo Atlante", author: "Michelangelo Buonarroti", start: "04:15", end: "04:39", desc: "La testa è imprigionata nel masso. La pietra sembra schiacciare l'uomo che resiste." },
-            { id: 10, title: "Schiavo che si desta", author: "Michelangelo Buonarroti", start: "04:41", end: "05:09", desc: "Il corpo si inarca in una torsione potente. Destinato alla tomba di Giulio II." },
-            { id: 11, title: "San Matteo", author: "Michelangelo Buonarroti", start: "05:11", end: "05:35", desc: "Commissionata per il Duomo. Posa in rotazione, segni evidenti della gradina." },
-            { id: 12, title: "Pietà di Palestrina", author: "Attr. Michelangelo", start: "05:37", end: "06:02", desc: "Cristo sorretto dalla Vergine e dalla Maddalena. Grande pathos e pesantezza del corpo." },
-            { id: 13, title: "David", author: "Michelangelo Buonarroti", start: "06:04", end: "06:29", desc: "Il capolavoro assoluto (1501-1504). Ritratto nell'attimo di concentrazione prima dello scontro." },
-            { id: 14, title: "Busto di Michelangelo", author: "Daniele da Volterra", start: "06:31", end: "06:55", desc: "Ritratto in bronzo dell'artista anziano. Naso rotto e espressione malinconica." },
-            { id: 15, title: "L'Ammostatore", author: "Lorenzo Bartolini", start: "06:57", end: "07:21", desc: "Statua del fanciullo che pigia l'uva. Introduzione del 'bello naturale' nella scultura." },
-            { id: 16, title: "Fiducia in Dio", author: "Lorenzo Bartolini", start: "07:23", end: "07:47", desc: "Figura femminile in preghiera. Rappresenta la fede attraverso la bellezza naturale." },
-            { id: 17, title: "Albero della vita", author: "Pacino di Buonaguida", start: "07:49", end: "08:15", desc: "Crocifissione come albero (1300). Medaglioni con storie di Cristo, enciclopedia teologica." },
-            { id: 18, title: "Incoronazione della Vergine", author: "Jacopo di Cione", start: "08:17", end: "08:41", desc: "Splendore post-Giotto. Fondo oro e ricchezza dei tessuti decorati a punzone." },
-            { id: 19, title: "Viola Medicea", author: "Antonio Stradivari", start: "08:43", end: "09:09", desc: "Costruita nel 1690. Intarsi in madreperla, unica viola tenore perfettamente conservata." },
-            { id: 20, title: "Violoncello Mediceo", author: "Antonio Stradivari", start: "09:11", end: "09:36", desc: "Parte del Quintetto Mediceo. Vernice rossa splendida e suono inarrivabile." },
-            { id: 21, title: "Spinetta Ovale", author: "Bartolomeo Cristofori", start: "09:38", end: "10:02", desc: "Forma allungata, rarissima. Testimonianza della sperimentazione tra musica e scienza." },
-            { id: 22, title: "Pianoforte di Cristofori", author: "Bartolomeo Cristofori", start: "10:04", end: "10:33", desc: "Uno dei primi pianoforti. Meccanismo per suonare 'piano' e 'forte' con la pressione." }
+            { id: 1, title: "Introduzione", author: "", start: "00:00", end: "00:46", desc: "Benvenuti alla Galleria dell'Accademia di Firenze. Questo museo non è solo la casa del David, ma uno scrigno che racchiude secoli di storia." },
+            { id: 2, title: "Ratto delle Sabine", author: "Giambologna", start: "00:48", end: "01:28", desc: "Modello in terra cruda al centro della Sala del Colosso. Notate la forma serpentinata dei tre corpi che si avvitano verso l'alto." },
+            { id: 3, title: "Madonna col Bambino", author: "Sandro Botticelli", start: "01:30", end: "02:11", desc: "Detta 'Madonna del Mare'. Osservate la delicatezza del volto e la melagrana, simbolo della passione." },
+            { id: 4, title: "Cassone Adimari", author: "Lo Scheggia", start: "02:13", end: "02:56", desc: "Pannello frontale di un cassone nuziale che raffigura un corteo nel cuore di Firenze con il Battistero sullo sfondo." },
+            { id: 5, title: "Schiavo Giovane", author: "Michelangelo", start: "04:30", end: "05:10", desc: "Il primo dei prigioni. Le ginocchia piegate suggeriscono lo sforzo di alzarsi. Il 'non finito' mostra la tecnica scultorea." },
+            { id: 6, title: "David", author: "Michelangelo", start: "08:44", end: "09:33", desc: "Il capolavoro assoluto. David è ritratto nell'attimo di concentrazione prima dello scontro con Golia. Simbolo della virtù civica." }
         ]
     };
 
     window.app = {
         currentData: null,
-        activeTrackEndSec: null, 
-        
+        activeEndSec: null,
+
         init: function() {
-            // Genera il testo del prompt automaticamente
-            const promptText = `Sei un assistente per la creazione di file JSON per audioguide.
-Obiettivo: Convertire un testo e una lista di orari in un array JSON strutturato.
-
-LOGICA DI ESTRAZIONE:
-1. "Titolo Opera": è il valore chiave che identifica l'inizio di un blocco.
-2. "Autore": spesso segue il titolo, estrailo se presente.
-3. "Descrizione": è tutto il testo tra l'inizio del blocco e la frase di chiusura "Fine Descrizione" o "Fine Introduzione".
-4. TIMESTAMPS: 
-   - Start: orario di inizio (MM:SS) associato al Titolo.
-   - End: orario di fine (MM:SS) associato al marker "Fine Descrizione".
-
-OUTPUT RICHIESTO (JSON valido):
-{
-  "title": "Titolo Guida",
-  "mp3File": "audio.mp3",
-  "tracks": [
-    {
-      "id": 1,
-      "title": "Nome Opera",
-      "author": "Nome Autore",
-      "start": "MM:SS",
-      "end": "MM:SS",
-      "desc": "Testo descrittivo pulito..."
-    }
-  ]
-}
-
-Usa i dati forniti dall'utente (Testo trascritto + Tabella orari) per popolare questo JSON.`;
-            document.getElementById('aiPromptOutput').value = promptText;
-
-            // Carica la guida demo all'avvio
-            this.loadGuide('demo');
-
-            // Listener Player per lo STOP automatico
+            this.loadDemo();
+            
+            // Gestione Stop Automatico
             const player = document.getElementById('audioPlayer');
             player.addEventListener('timeupdate', () => {
-                if (this.activeTrackEndSec && player.currentTime >= this.activeTrackEndSec) {
+                if (this.activeEndSec && player.currentTime >= this.activeEndSec) {
                     player.pause();
-                    this.activeTrackEndSec = null; 
-                    document.querySelectorAll('.track-card').forEach(c => c.classList.remove('playing'));
+                    this.activeEndSec = null; // Reset
+                    this.updateUIState(null); // Rimuovi highlight
                 }
             });
         },
 
-        openPromptModal: function() {
-            document.getElementById('promptModal').style.display = 'flex';
-        },
-
-        copyPrompt: function() {
-            const copyText = document.getElementById("aiPromptOutput");
-            copyText.select();
-            document.execCommand("copy");
-            alert("Prompt copiato!");
-        },
-
-        loadGuide: function(val) {
-            if(val === 'demo') {
-                this.renderGuide(DEMO_GUIDE);
-            } else {
-                document.getElementById('trackList').innerHTML = '<div style="text-align:center; padding:40px; color:#999;">Carica un file JSON dal tuo computer</div>';
-                document.getElementById('trackLabel').innerText = "In attesa di file...";
-                document.getElementById('audioPlayer').src = ""; // Pulisce il player se scarico la guida
-            }
+        /* --- LOGICA DI NAVIGAZIONE --- */
+        loadDemo: function() {
+            this.renderGuide(DEMO_DATA);
+            this.setActiveChip(0);
         },
 
         loadLocalJson: function(input) {
             const file = input.files[0];
-            if(!file) return;
-            const r = new FileReader();
-            r.onload = (e) => {
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
                 try {
                     const data = JSON.parse(e.target.result);
                     this.renderGuide(data);
-                } catch(err) { alert("JSON non valido: " + err); }
+                    this.setActiveChip(1);
+                } catch (err) {
+                    alert("Errore nel file JSON: " + err);
+                }
             };
-            r.readAsText(file);
+            reader.readAsText(file);
         },
 
         renderGuide: function(data) {
             this.currentData = data;
-            
-            // --- AGGANCIO AUDIO ---
-            const player = document.getElementById('audioPlayer');
-            // Carica il file MP3 specificato nel JSON
-            if(data.mp3File) {
-                // Controllo se è già caricato per non interrompere se ricarico lo stesso JSON
-                if(!player.src.endsWith(data.mp3File)) {
-                    player.src = data.mp3File;
-                }
-            } else {
-                alert("Attenzione: Il file JSON non specifica un campo 'mp3File'.");
-            }
-            // ----------------------
-
             const list = document.getElementById('trackList');
-            list.innerHTML = "";
-            document.getElementById('trackLabel').innerText = data.title;
+            const player = document.getElementById('audioPlayer');
             
-            data.tracks.forEach(t => {
-                t.sSec = this.timeToSec(t.start);
-                t.eSec = this.timeToSec(t.end);
+            // Setup Player
+            if (data.mp3File && !player.src.endsWith(data.mp3File)) {
+                player.src = data.mp3File;
+            }
+            document.getElementById('npTitle').textContent = data.title;
 
-                const li = document.createElement('li');
-                li.className = "track-card";
-                li.dataset.id = t.id;
-                li.onclick = () => this.playTrack(t);
+            // Render Lista
+            list.innerHTML = '';
+            data.tracks.forEach(track => {
+                const el = document.createElement('div');
+                el.className = 'track-card';
+                el.id = `track-${track.id}`;
+                el.onclick = () => this.playTrack(track);
                 
-                li.innerHTML = `
-                    <div class="card-top">
-                        <span>${t.title}</span>
-                        <span class="t-time">${t.start} - ${t.end}</span>
+                el.innerHTML = `
+                    <div class="track-header">
+                        <span class="track-title">${track.title}</span>
+                        <span class="track-duration">${track.start}</span>
                     </div>
-                    ${t.author ? `<div class="card-meta">👤 ${t.author}</div>` : ''}
-                    <div class="track-desc">${t.desc}</div>
+                    ${track.author ? `<div class="track-author">${track.author}</div>` : ''}
+                    <div class="track-desc">${track.desc}</div>
                 `;
-                list.appendChild(li);
+                list.appendChild(el);
             });
         },
 
         playTrack: function(track) {
             const player = document.getElementById('audioPlayer');
-            
-            // Imposta lo stop automatico
-            this.activeTrackEndSec = track.eSec;
-            
-            // UI Update
-            document.querySelectorAll('.track-card').forEach(c => {
-                c.classList.remove('active', 'playing');
-            });
-            const card = document.querySelector(`.track-card[data-id="${track.id}"]`);
-            if(card) card.classList.add('active', 'playing');
+            const startSec = this.toSec(track.start);
+            this.activeEndSec = this.toSec(track.end);
 
-            document.getElementById('trackLabel').innerText = `${track.title} (${track.author})`;
-
-            // Audio Control
-            player.currentTime = track.sSec;
-            player.play().catch(e => console.error("Errore riproduzione:", e));
+            player.currentTime = startSec;
+            player.play();
+            
+            // Aggiorna UI Player Bar
+            document.getElementById('npTitle').textContent = track.title;
+            
+            // Aggiorna UI Lista
+            this.updateUIState(track.id);
         },
 
-        search: function(q) {
-            if(!this.currentData) return;
-            const term = q.toLowerCase();
+        updateUIState: function(activeId) {
+            document.querySelectorAll('.track-card').forEach(c => c.classList.remove('active'));
+            if (activeId) {
+                const activeCard = document.getElementById(`track-${activeId}`);
+                if (activeCard) {
+                    activeCard.classList.add('active');
+                    // Scroll dolce verso la card
+                    activeCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            } else {
+                document.getElementById('npTitle').textContent = this.currentData.title;
+            }
+        },
+
+        search: function(query) {
+            if (!this.currentData) return;
+            const term = query.toLowerCase();
             const cards = document.querySelectorAll('.track-card');
             
-            this.currentData.tracks.forEach((t, index) => {
+            this.currentData.tracks.forEach((t, i) => {
                 const match = t.title.toLowerCase().includes(term) || 
                               (t.author && t.author.toLowerCase().includes(term)) || 
                               t.desc.toLowerCase().includes(term);
-                cards[index].style.display = match ? 'block' : 'none';
+                cards[i].style.display = match ? 'block' : 'none';
             });
         },
 
-        timeToSec: function(str) {
-            if(!str) return 0;
+        /* --- TOOL GENERATORE PROMPT --- */
+        openTool: function() {
+            document.getElementById('toolModal').style.display = 'flex';
+        },
+
+        generateAndCopy: function() {
+            const title = document.getElementById('pTitle').value || "[Titolo]";
+            const file = document.getElementById('pFilename').value || "[file.mp3]";
+            const transcript = document.getElementById('pTranscript').value || "[testo]";
+
+            const prompt = `Sei un assistente per audioguide. Crea un file JSON valido basato su questi dati.
+
+DATI DI INPUT:
+- Titolo Guida: "${title}"
+- File Audio: "${file}"
+- Trascrizione:
+"""
+${transcript}
+"""
+
+ISTRUZIONI:
+1. Crea un array "tracks".
+2. Ogni traccia deve avere: "id", "title", "author" (se presente), "start" (MM:SS inizio), "end" (MM:SS fine), "desc" (testo pulito).
+3. "start" è il tempo del titolo dell'opera. "end" è il tempo di "Fine descrizione" o l'inizio della successiva.
+
+OUTPUT JSON:
+{
+  "title": "${title}",
+  "mp3File": "${file}",
+  "tracks": [ ... ]
+}`;
+
+            // Mostra anteprima e copia
+            const preview = document.getElementById('promptResult');
+            preview.style.display = 'block';
+            preview.textContent = "Prompt copiato! Incollalo ora nella chat AI.";
+            
+            navigator.clipboard.writeText(prompt);
+            alert("Prompt copiato negli appunti! Ora incollalo su ChatGPT.");
+        },
+
+        /* --- UTILITY --- */
+        toSec: function(str) {
             const p = str.split(':');
-            return parseInt(p[0])*60 + parseInt(p[1]);
+            return parseInt(p[0]) * 60 + parseInt(p[1]);
+        },
+        
+        setActiveChip: function(index) {
+            document.querySelectorAll('.chip').forEach((c, i) => {
+                c.classList.toggle('active', i === index);
+            });
         }
     };
 
-    // Avvio
     window.app.init();
 </script>
+
 </body>
 </html>
