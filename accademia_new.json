@@ -1,0 +1,181 @@
+{
+  "title": "Galleria dell'Accademia Firenze",
+  "mp3File": "Galleria_Accademia_di_Firenze.mp3",
+  "tracks": [
+    {
+      "id": 1,
+      "title": "Introduzione",
+      "start": "0:00",
+      "end": "0:47",
+      "desc": "Benvenuti alla Galleria dell'Accademia di Firenze. Questo museo non è solo la casa del David, ma uno scrigno che racchiude secoli di storia dell'arte fiorentina. Il nostro percorso inizierà dalla Sala del Colosso, ricca di pittura rinascimentale, per poi attraversare il corridoio dei prigioni dove il non finito di Michelangelo vi circonderà. Arriveremo poi alla tribuna per ammirare il David, ma il viaggio continuerà nella Gipsoteca, un salone ottocentesco pieno di modelli in gesso, nella Sala dei Fondi Oro e infine nella preziosa collezione di strumenti musicali. Ogni traccia è pensata per essere breve ed essenziale. Buona visita."
+    },
+    {
+      "id": 2,
+      "title": "Ratto delle Sabine",
+      "author": "Jean de Boulogne (Giambologna)",
+      "start": "0:49",
+      "end": "1:29",
+      "desc": "Al centro della prima sala domina questo imponente modello in terra cruda. È lo studio preparatorio a grandezza naturale per la statua che si trova in Piazza della Signoria. Notate la forma serpentinata. Tre corpi, un vecchio, un giovane e una donna, si avvitano in una spirale verso l'alto. Non c'è un punto di vista unico, l'opera vi invita a girarle attorno per scoprire ogni dettaglio di questa lotta drammatica."
+    },
+    {
+      "id": 3,
+      "title": "Madonna col bambino (Madonna del mare)",
+      "author": "Sandro Botticelli",
+      "start": "1:31",
+      "end": "2:00",
+      "desc": "In questo dipinto giovanile di Botticelli osservate la delicatezza del volto di Maria. L'opera è chiamata Madonna del mare per il paesaggio marino che si intravede sullo sfondo, un dettaglio raro per l'epoca. Notate il frutto che il bambino tiene in mano. È una melagrana, simbolo della passione di Cristo, che aggiunge una nota di malinconia alla dolcezza della scena."
+    },
+    {
+      "id": 4,
+      "title": "Cassone Adimari",
+      "author": "Giovanni di Ser Giovanni (Lo Scheggia)",
+      "start": "2:00",
+      "end": "2:40",
+      "desc": "Questo lungo pannello dipinto era originariamente la parte frontale di un cassone nuziale, un mobile usato per conservare il corredo. Raffigura un corteo nuziale nel cuore di Firenze, con il battistero sullo sfondo. È un documento storico eccezionale. Osservate gli abiti sfarzosi in broccato e le acconciature delle dame, che ci mostrano esattamente come si vestiva l'aristocrazia fiorentina del Quattrocento."
+    },
+    {
+      "id": 5,
+      "title": "Tebaide",
+      "author": "Paolo Uccello",
+      "start": "2:40",
+      "end": "3:12",
+      "desc": "Questo dipinto affascinante racconta la vita dei santi eremiti nel deserto. Non c'è un'unica scena, ma tante piccole storie da scoprire. Osservate la struttura geometrica e i colori vivaci, tipici di Paolo Uccello, maestro della prospettiva. Vedrete monaci in preghiera, visioni mistiche e paesaggi rocciosi stilizzati che sembrano quasi moderni nella loro composizione."
+    },
+    {
+      "id": 6,
+      "title": "Santi Stefano, Giacomo e Pietro",
+      "author": "Domenico Ghirlandaio",
+      "start": "3:12",
+      "end": "3:52",
+      "desc": "Ghirlandaio è stato uno dei maestri di Michelangelo. In questa tavola osservate la monumentalità delle figure dei tre santi. Sono solidi, realistici e inseriti in uno spazio architettonico ben definito. San Stefano, a sinistra, porta la pietra del suo martirio sulla testa, mentre i colori brillanti delle vesti dimostrano la grande abilità tecnica della bottega del Ghirlandaio."
+    },
+    {
+      "id": 7,
+      "title": "Schiavo giovane",
+      "author": "Michelangelo Buonarroti",
+      "start": "3:52",
+      "end": "4:24",
+      "desc": "Entrando nel corridoio, il primo prigione a sinistra è lo schiavo giovane. Le ginocchia sono piegate, come se stesse cercando di alzarsi. Il volto è coperto dal braccio alzato, nascondendo l'espressione. Notate come la parte posteriore sia ancora grezza. Questo ci mostra come Michelangelo attaccasse il blocco di marmo partendo dalla parte frontale, facendo emergere la figura come se uscisse dall'acqua."
+    },
+    {
+      "id": 8,
+      "title": "Schiavo barbuto",
+      "author": "Michelangelo Buonarroti",
+      "start": "4:24",
+      "end": "4:50",
+      "desc": "Sulla destra troviamo lo schiavo barbuto. È forse il più finito dei quattro. Si vede chiaramente la tensione muscolare del torso, che cerca di liberarsi dalla materia inerte. La testa è girata di lato e la barba riccia è appena abbozzata. La lotta tra la forma, l'uomo, e la materia, la pietra, qui è tangibile e drammatica."
+    },
+    {
+      "id": 9,
+      "title": "Atlante",
+      "author": "Michelangelo Buonarroti",
+      "start": "4:51",
+      "end": "5:16",
+      "desc": "Proseguendo a sinistra incontriamo l'imponente Atlante. Prende il nome dal mito del gigante che reggeva il mondo, perché la testa di questa figura è ancora completamente imprigionata in un masso quadrato di marmo che sembra pesare sulle sue spalle. È l'esempio più potente del non finito. La pietra sembra schiacciare l'uomo, ma l'uomo resiste con forza erculea."
+    },
+    {
+      "id": 10,
+      "title": "Schiavo che si desta",
+      "author": "Michelangelo Buonarroti",
+      "start": "5:16",
+      "end": "5:43",
+      "desc": "L'ultimo dei prigioni sulla destra è lo schiavo che si desta. Il corpo si inarca in una torsione potente, cercando di strapparsi via dalla pietra. Le gambe sono ancora immerse nel marmo grezzo, mentre il torso e le braccia mostrano una potenza anatomica straordinaria. Queste statue erano destinate alla tomba di Giulio II a Roma, ma non vi arrivarono mai."
+    },
+    {
+      "id": 11,
+      "title": "San Matteo",
+      "author": "Michelangelo Buonarroti",
+      "start": "5:45",
+      "end": "6:11",
+      "desc": "Oltre ai prigioni, nel corridoio trovate questa statua commissionata per il Duomo di Firenze. Doveva essere la prima di dodici apostoli, ma è l'unica che Michelangelo iniziò. Osservate la posa in rotazione. Il santo sembra girarsi bruscamente, con un libro in mano. Anche qui l'opera è incompiuta, permettendoci di vedere i segni della gradina, lo scalpello dentato usato dall'artista."
+    },
+    {
+      "id": 12,
+      "title": "Pietà di Palestrina",
+      "author": "Attribuita a Michelangelo",
+      "start": "6:13",
+      "end": "6:44",
+      "desc": "Sulla destra della tribuna si trova questo gruppo scultoreo imponente. Rappresenta Cristo sorretto dalla Vergine e da Maria Maddalena. Sebbene l'attribuzione a Michelangelo sia dibattuta dagli studiosi, l'opera possiede una gravità e una possenza tipiche del maestro. Notate la pesantezza del corpo di Cristo che scende verso il basso, un'immagine di grande patos."
+    },
+    {
+      "id": 13,
+      "title": "David",
+      "author": "Michelangelo Buonarroti",
+      "start": "6:47",
+      "end": "7:23",
+      "desc": "Siamo al cospetto del capolavoro assoluto, scolpito tra il 1501 e il 1504 in un unico blocco di marmo che altri avevano giudicato inutilizzabile. David non è ritratto come un vincitore con la testa di Golia, ma nell'attimo prima dello scontro. Guardate le sue mani grandi e venose, il collo teso, lo sguardo concentrato e le sopracciglia aggrottate. È l'incarnazione della concentrazione mentale e della virtù civica fiorentina."
+    },
+    {
+      "id": 14,
+      "title": "Busto di Michelangelo",
+      "author": "Daniele da Volterra",
+      "start": "7:25",
+      "end": "7:55",
+      "desc": "Per conoscere il volto dell'uomo che ha creato tutto questo, guardate questo busto in bronzo. È opera di Daniele da Volterra, allievo e amico fedele di Michelangelo. Ritrae l'artista in età avanzata. Notate il naso schiacciato, rotto durante una rissa giovanile, la barba folta e l'espressione malinconica e profonda di un genio tormentato."
+    },
+    {
+      "id": 15,
+      "title": "L'ammostatore",
+      "author": "Lorenzo Bartolini",
+      "start": "7:59",
+      "end": "8:33",
+      "desc": "Entrando nella gipsoteca vedrete file di busti e modelli in gesso. Cercate la statua del fanciullo che pigia l'uva, l'ammostatore. Bartolini rivoluzionò la scultura dell'Ottocento introducendo il bello naturale. Invece di copiare le statue greche, fece posare un ragazzo del popolo. Notate la naturalezza della posa e l'attenzione veritiera ai dettagli anatomici lontani dall'idealizzazione classica."
+    },
+    {
+      "id": 16,
+      "title": "Fiducia in Dio",
+      "author": "Lorenzo Bartolini",
+      "start": "8:34",
+      "end": "9:05",
+      "desc": "Al centro della sala trovate questa figura femminile nuda inginocchiata in preghiera. È una delle opere più famose di Bartolini. La purezza delle linee e l'espressione di abbandono spirituale ne fecero un'icona del tempo. L'artista voleva rappresentare un'idea astratta, la fede, attraverso la bellezza naturale di un corpo femminile perfetto ma umano."
+    },
+    {
+      "id": 17,
+      "title": "Albero della vita",
+      "author": "Pacino di Buonaguida",
+      "start": "9:08",
+      "end": "9:40",
+      "desc": "Questa tavola complessa e affascinante risale al 1300. Rappresenta la crocifissione come un albero da cui si diramano dodici rami. Su ogni ramo pendono dei frutti che in realtà sono medaglioni con storie della vita di Cristo. È un'opera che va letta più che guardata. Una vera e propria enciclopedia teologica dipinta per istruire i fedeli del tempo."
+    },
+    {
+      "id": 18,
+      "title": "Incoronazione della Vergine",
+      "author": "Jacopo di Cione",
+      "start": "9:41",
+      "end": "10:12",
+      "desc": "Questa grande pala d'altare ci mostra lo splendore dell'arte fiorentina dopo Giotto. Il fondo oro non è solo decorazione ma serve a creare una dimensione divina fuori dal tempo. Osservate la ricchezza dei tessuti decorati a punzone e la solennità della scena in cui Cristo pone la corona sulla testa di Maria circondati da una folla di santi."
+    },
+    {
+      "id": 19,
+      "title": "Viola Medicea",
+      "author": "Antonio Stradivari",
+      "start": "10:15",
+      "end": "10:46",
+      "desc": "Tra gli strumenti esposti questo è il gioiello, costruita nel 1690 da Stradivari per il gran principe Ferdinando dei Medici. È un capolavoro di liuteria unico nel mondo. Osservate gli intarsi in madreperla e lo stemma Mediceo sul manico. È l'unica viola tenore di Stradivari conservata perfettamente nella sua forma originale."
+    },
+    {
+      "id": 20,
+      "title": "Violoncello Mediceo",
+      "author": "Antonio Stradivari",
+      "start": "14:53",
+      "end": "15:21",
+      "desc": "Accanto alla viola ammirate il violoncello dello stesso anno. Faceva parte dello stesso quintetto mediceo anche se nel corso dei secoli è stato modificato per le esigenze musicali moderne mantiene una vernice rossa splendida e una qualità del suono che ancora oggi è considerata inarrivabile."
+    },
+    {
+      "id": 21,
+      "title": "Spinetta ovale",
+      "author": "Bartolomeo Cristofori",
+      "start": "15:22",
+      "end": "15:53",
+      "desc": "Questo strano strumento dalla forma allungata è una rarissima spinetta costruita da Bartolomeo Cristofori. Cristofori è famoso per essere l'inventore del pianoforte. Osservate l'ingegnosità della struttura in legno, è una testimonianza della sperimentazione tecnica che avveniva alla Corte dei Medici dove musica e scienza si incontravano."
+    },
+    {
+      "id": 22,
+      "title": "Pianoforte di Cristofori",
+      "author": "Bartolomeo Cristofori",
+      "start": "15:54",
+      "end": "16:22",
+      "desc": "Ecco uno dei pezzi più importanti della storia della musica, uno dei primi pianoforti mai costruiti. Cristofori inventò un meccanismo che permetteva di suonare piano e forte a seconda della pressione sul tasto, cosa impossibile con i clavicembali dell'epoca. State guardando l'antenato diretto dei moderni pianoforti da concerto."
+    }
+  ]
+}
