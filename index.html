@@ -125,10 +125,10 @@
 </div>
 
 <script>
-    // --- DATI DIMOSTRATIVI (Merge dei tuoi file TXT + CSV) ---
+    // --- DATI DIMOSTRATIVI ---
     const DEMO_GUIDE = {
         title: "Galleria dell'Accademia di Firenze",
-        mp3File: "audio.mp3", // Sostituire con il nome file reale se diverso
+        mp3File: "audio.mp3", // Assicurati che il file si chiami ESATTAMENTE così (minuscolo)
         tracks: [
             { id: 1, title: "Introduzione", author: "", start: "00:00", end: "00:49", desc: "Benvenuti alla Galleria dell'Accademia. Un percorso tra la Sala del Colosso, i Prigioni e la Tribuna." },
             { id: 2, title: "Ratto delle Sabine", author: "Giambologna", start: "00:54", end: "01:24", desc: "Modello in terra cruda. Notate la 'forma serpentinata' che invita a girare attorno all'opera." },
@@ -157,7 +157,7 @@
 
     window.app = {
         currentData: null,
-        activeTrackEndSec: null, // Per gestire lo stop automatico
+        activeTrackEndSec: null, 
         
         init: function() {
             // Genera il testo del prompt automaticamente
@@ -175,6 +175,7 @@ LOGICA DI ESTRAZIONE:
 OUTPUT RICHIESTO (JSON valido):
 {
   "title": "Titolo Guida",
+  "mp3File": "audio.mp3",
   "tracks": [
     {
       "id": 1,
@@ -198,8 +199,7 @@ Usa i dati forniti dall'utente (Testo trascritto + Tabella orari) per popolare q
             player.addEventListener('timeupdate', () => {
                 if (this.activeTrackEndSec && player.currentTime >= this.activeTrackEndSec) {
                     player.pause();
-                    this.activeTrackEndSec = null; // Reset
-                    // Rimuovi lo stato "playing" visivo ma lascia "active"
+                    this.activeTrackEndSec = null; 
                     document.querySelectorAll('.track-card').forEach(c => c.classList.remove('playing'));
                 }
             });
@@ -213,7 +213,7 @@ Usa i dati forniti dall'utente (Testo trascritto + Tabella orari) per popolare q
             const copyText = document.getElementById("aiPromptOutput");
             copyText.select();
             document.execCommand("copy");
-            alert("Prompt copiato! Incollalo nella tua AI con i tuoi file.");
+            alert("Prompt copiato!");
         },
 
         loadGuide: function(val) {
@@ -222,6 +222,7 @@ Usa i dati forniti dall'utente (Testo trascritto + Tabella orari) per popolare q
             } else {
                 document.getElementById('trackList').innerHTML = '<div style="text-align:center; padding:40px; color:#999;">Carica un file JSON dal tuo computer</div>';
                 document.getElementById('trackLabel').innerText = "In attesa di file...";
+                document.getElementById('audioPlayer').src = ""; // Pulisce il player se scarico la guida
             }
         },
 
@@ -240,13 +241,25 @@ Usa i dati forniti dall'utente (Testo trascritto + Tabella orari) per popolare q
 
         renderGuide: function(data) {
             this.currentData = data;
+            
+            // --- AGGANCIO AUDIO ---
+            const player = document.getElementById('audioPlayer');
+            // Carica il file MP3 specificato nel JSON
+            if(data.mp3File) {
+                // Controllo se è già caricato per non interrompere se ricarico lo stesso JSON
+                if(!player.src.endsWith(data.mp3File)) {
+                    player.src = data.mp3File;
+                }
+            } else {
+                alert("Attenzione: Il file JSON non specifica un campo 'mp3File'.");
+            }
+            // ----------------------
+
             const list = document.getElementById('trackList');
             list.innerHTML = "";
             document.getElementById('trackLabel').innerText = data.title;
             
-            // Ordina per tempo se necessario, qui assumiamo l'ordine JSON
             data.tracks.forEach(t => {
-                // Calcola secondi per il motore audio
                 t.sSec = this.timeToSec(t.start);
                 t.eSec = this.timeToSec(t.end);
 
@@ -283,10 +296,8 @@ Usa i dati forniti dall'utente (Testo trascritto + Tabella orari) per popolare q
             document.getElementById('trackLabel').innerText = `${track.title} (${track.author})`;
 
             // Audio Control
-            // Se l'audio è già in riproduzione e siamo dentro il range, non ricaricare tutto se non serve
-            // Ma per sicurezza di navigazione, saltiamo sempre al punto esatto
             player.currentTime = track.sSec;
-            player.play();
+            player.play().catch(e => console.error("Errore riproduzione:", e));
         },
 
         search: function(q) {
@@ -311,7 +322,6 @@ Usa i dati forniti dall'utente (Testo trascritto + Tabella orari) per popolare q
 
     // Avvio
     window.app.init();
-
 </script>
 </body>
 </html>
